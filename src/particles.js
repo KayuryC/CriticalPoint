@@ -15,8 +15,7 @@ function criarParticulas(x, y, cor, quantidade) {
       vida: vida,
       vidaMaxima: vida,
       tamanho: 2 + Math.random() * 4,
-      rotacao: Math.random() * Math.PI,
-      brilho: 8 + Math.random() * 18
+      forma: Math.random() > 0.72 ? 'linha' : 'fragmento'
     })
   }
 
@@ -24,7 +23,7 @@ function criarParticulas(x, y, cor, quantidade) {
 }
 
 function atualizarParticulas(particulas) {
-  for (let i = 0; i < particulas.length; i++) {
+  for (let i = particulas.length - 1; i >= 0; i--) {
     const particula = particulas[i]
 
     particula.x += particula.vx
@@ -32,37 +31,47 @@ function atualizarParticulas(particulas) {
     particula.vx *= 0.94
     particula.vy *= 0.94
     particula.vy += 0.015
-    particula.rotacao += 0.08
     particula.vida--
+
+    if (particula.vida <= 0) {
+      particulas.splice(i, 1)
+    }
   }
 }
 
-function desenharParticulas(ctx, particulas) {
-  for (let i = 0; i < particulas.length; i++) {
+function desenharParticulas(ctx, particulas, detalhe) {
+  const nivel = detalhe === undefined ? 2 : detalhe
+  const passo = nivel === 0 && particulas.length > 100 ? 2 : 1
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.shadowBlur = 0
+
+  for (let i = 0; i < particulas.length; i += passo) {
     const particula = particulas[i]
     const alpha = Math.max(0, particula.vida / particula.vidaMaxima)
 
-    ctx.save()
-    ctx.translate(particula.x, particula.y)
-    ctx.rotate(particula.rotacao)
     ctx.globalAlpha = alpha
     ctx.fillStyle = particula.cor
     ctx.strokeStyle = particula.cor
-    ctx.shadowBlur = particula.brilho * alpha
-    ctx.shadowColor = particula.cor
 
-    if (Math.random() > 0.45) {
-      ctx.fillRect(-particula.tamanho / 2, -particula.tamanho / 2, particula.tamanho, particula.tamanho)
+    if (particula.forma === 'fragmento') {
+      ctx.fillRect(
+        particula.x - particula.tamanho / 2,
+        particula.y - particula.tamanho / 2,
+        particula.tamanho,
+        particula.tamanho
+      )
     } else {
-      ctx.lineWidth = 2
+      ctx.lineWidth = nivel === 0 ? 1 : 2
       ctx.beginPath()
-      ctx.moveTo(-particula.tamanho, 0)
-      ctx.lineTo(particula.tamanho * 1.6, 0)
+      ctx.moveTo(particula.x - particula.vx * 1.4, particula.y - particula.vy * 1.4)
+      ctx.lineTo(particula.x + particula.vx * 0.5, particula.y + particula.vy * 0.5)
       ctx.stroke()
     }
-
-    ctx.restore()
   }
+
+  ctx.restore()
 }
 
 function removerParticulas(particulas) {
@@ -71,4 +80,48 @@ function removerParticulas(particulas) {
       particulas.splice(i, 1)
     }
   }
+}
+
+function criarOndaImpacto(x, y, cor, tamanho) {
+  return {
+    x: x,
+    y: y,
+    cor: cor || '#00ff41',
+    raio: 4,
+    raioMaximo: tamanho || 58,
+    vida: 1
+  }
+}
+
+function atualizarOndasImpacto(ondas) {
+  for (let i = ondas.length - 1; i >= 0; i--) {
+    const onda = ondas[i]
+    onda.raio += Math.max(2.5, onda.raioMaximo * 0.07)
+    onda.vida -= 0.075
+
+    if (onda.vida <= 0 || onda.raio >= onda.raioMaximo) {
+      ondas.splice(i, 1)
+    }
+  }
+}
+
+function desenharOndasImpacto(ctx, ondas, detalhe) {
+  const nivel = detalhe === undefined ? 2 : detalhe
+
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+
+  for (let i = 0; i < ondas.length; i++) {
+    const onda = ondas[i]
+    ctx.globalAlpha = Math.max(0, onda.vida)
+    ctx.strokeStyle = onda.cor
+    ctx.shadowBlur = nivel === 0 ? 0 : 10
+    ctx.shadowColor = onda.cor
+    ctx.lineWidth = 1 + onda.vida * 4
+    ctx.beginPath()
+    ctx.arc(onda.x, onda.y, onda.raio, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
+  ctx.restore()
 }

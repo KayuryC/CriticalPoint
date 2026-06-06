@@ -7,10 +7,27 @@
 body {
   background: #000;
   overflow: hidden;
+  user-select: none;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(120, 255, 160, 0.025) 0,
+    rgba(120, 255, 160, 0.025) 1px,
+    transparent 1px,
+    transparent 5px
+  );
 }
 
 #gameCanvas {
   display: block;
   width: 100vw;
   height: 100vh;
+  cursor: crosshair;
+  touch-action: none;
 }

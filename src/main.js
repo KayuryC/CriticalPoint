@@ -22,6 +22,11 @@ const mouse = {
   down: false
 }
 
+const LIMITE_BALAS_PLAYER = 120
+const LIMITE_BALAS_INIMIGAS = 260
+const LIMITE_PARTICULAS = 280
+const LIMITE_ONDAS = 24
+
 const QUESTOES = {
   1: {
     titulo: 'Wave 1 - Funcoes de varias variaveis',
@@ -97,29 +102,249 @@ const tutorialArquivos = [
     id: 1,
     nome: 'ARQUIVO_01.exe',
     aberto: false,
+    concluido: false,
+    paginaAtual: 0,
     titulo: 'Funcoes f(x,y)',
-    texto: 'Uma funcao f(x,y) recebe dois valores de entrada e devolve uma saida.\nDominio e o mapa de pontos permitidos: cada (x,y) e uma coordenada onde Zion pode testar a funcao.\nImagem e o conjunto dos valores que podem sair desse mapa. Em f=x^2+y^2, pontos longe da origem geram alturas maiores.'
+    paginas: [
+      {
+        secao: 'FUNDAMENTO',
+        titulo: 'Uma entrada com duas coordenadas',
+        resumo: 'Uma funcao f(x,y) recebe um par ordenado (x,y) e devolve um unico valor. O primeiro numero sempre ocupa x; o segundo ocupa y. Trocar essa ordem pode mudar completamente o resultado.',
+        formula: 'f(a,b): substitua x por a e y por b',
+        passos: [
+          'Leia o ponto na ordem (x,y).',
+          'Localize cada x e cada y da expressao.',
+          'Substitua usando parenteses.',
+          'Calcule ate obter um unico numero.'
+        ],
+        dica: 'Pense em (x,y) como um endereco: x e a coluna e y e a linha.'
+      },
+      {
+        secao: 'REGRA OPERACIONAL',
+        titulo: 'Substituicao e ordem das operacoes',
+        resumo: 'Depois de substituir as variaveis, respeite a ordem: primeiro potencias, depois multiplicacoes e, por ultimo, somas e subtracoes. Escrever uma linha intermediaria evita erros.',
+        formula: 'f(x,y)=x^2+y^2  =>  f(a,b)=a^2+b^2',
+        passos: [
+          'Substitua: a^2 + b^2.',
+          'Calcule cada potencia separadamente.',
+          'Some os resultados apenas no final.',
+          'Confira se nenhuma coordenada foi trocada.'
+        ],
+        dica: '2^2 significa 2 vezes 2. Nao confunda potencia com multiplicacao por 2.'
+      },
+      {
+        secao: 'EXEMPLO RESOLVIDO',
+        titulo: 'Executando uma funcao',
+        resumo: 'Considere g(x,y)=2x+y^2 e o ponto (3,2). Substitua x por 3 e y por 2 antes de calcular.',
+        formula: 'g(3,2)=2(3)+2^2=6+4=10',
+        passos: [
+          'O primeiro valor, 3, entra em x.',
+          'O segundo valor, 2, entra em y.',
+          'Calcule 2 vezes 3 e depois 2^2.',
+          'Some 6 e 4 para obter 10.'
+        ],
+        dica: 'Os parenteses mostram claramente qual valor entrou em cada lugar.'
+      },
+      {
+        secao: 'PROTOCOLO DA WAVE 1',
+        titulo: 'Resolva f(2,3)=x^2+y^2',
+        resumo: 'A primeira barreira pede apenas substituicao. Use o mesmo procedimento do exemplo e mantenha cada parcela separada ate a ultima linha.',
+        formula: 'f(2,3)=2^2+3^2=4+9=13',
+        passos: [
+          'x recebe 2; portanto x^2 vale 4.',
+          'y recebe 3; portanto y^2 vale 9.',
+          'A funcao pede a soma das duas parcelas.',
+          'Resultado de verificacao: 13.'
+        ],
+        dica: 'Na questao da wave, procure a alternativa que corresponde ao resultado final.'
+      }
+    ]
   },
   {
     id: 2,
     nome: 'ARQUIVO_02.exe',
     aberto: false,
+    concluido: false,
+    paginaAtual: 0,
     titulo: 'Derivadas parciais',
-    texto: 'Derivada parcial congela uma variavel e observa a outra.\ndf/dx pergunta: se apenas x mudar, a superficie sobe ou desce? df/dy faz a mesma leitura para y.\nNo combate, pensar uma coordenada por vez ajuda Zion a prever como uma ameaca muda de direcao.'
+    paginas: [
+      {
+        secao: 'FUNDAMENTO',
+        titulo: 'Mude uma variavel por vez',
+        resumo: 'A derivada parcial mede a variacao em uma direcao. Em df/dx, x varia e y fica congelado como uma constante. Em df/dy, y varia e x fica congelado.',
+        formula: 'df/dx: derive em x e trate y como numero fixo',
+        passos: [
+          'Veja qual variavel aparece no denominador.',
+          'Derive somente em relacao a ela.',
+          'A outra variavel permanece na expressao.',
+          'Termos sem a variavel derivada viram zero.'
+        ],
+        dica: 'df/dx responde: o que muda se apenas x se mover?'
+      },
+      {
+        secao: 'REGRAS ESSENCIAIS',
+        titulo: 'Potencia, produto e constante',
+        resumo: 'Para derivar em x, use a regra da potencia nos termos com x. Um fator y pode ser tratado como constante. Um termo formado apenas por y nao muda quando x muda.',
+        formula: 'd(x^n)/dx=nx^(n-1) | d(cxy)/dx=cy | d(y^n)/dx=0',
+        passos: [
+          '3x^2 deriva para 6x.',
+          '2xy deriva para 2y.',
+          'y^2 deriva para 0 em relacao a x.',
+          'Derive termo por termo e depois some.'
+        ],
+        dica: 'Nao apague y de um termo xy: ele e um fator constante, nao um termo isolado.'
+      },
+      {
+        secao: 'EXEMPLO RESOLVIDO',
+        titulo: 'Derivando termo por termo',
+        resumo: 'Considere g(x,y)=2x^2+5xy+y^2. Queremos dg/dx, entao y permanece congelado.',
+        formula: 'dg/dx=4x+5y+0=4x+5y',
+        passos: [
+          '2x^2 gera 2 vezes 2x: 4x.',
+          '5xy gera 5y.',
+          'y^2 nao possui x e gera zero.',
+          'Junte os termos restantes: 4x+5y.'
+        ],
+        dica: 'Uma boa verificacao e perguntar se cada termo original continha x.'
+      },
+      {
+        secao: 'PROTOCOLO DA WAVE 2',
+        titulo: 'Derive 3x^2+2xy+y^2 em x',
+        resumo: 'A segunda barreira usa exatamente as tres regras anteriores: potencia de x, produto xy e termo somente em y.',
+        formula: 'df/dx=6x+2y+0=6x+2y',
+        passos: [
+          '3x^2 deriva para 6x.',
+          '2xy deriva para 2y.',
+          'y^2 deriva para zero.',
+          'Resposta de verificacao: 6x+2y.'
+        ],
+        dica: 'A ordem 6x+2y ou 2y+6x representa a mesma soma.'
+      }
+    ]
   },
   {
     id: 3,
     nome: 'ARQUIVO_03.exe',
     aberto: false,
+    concluido: false,
+    paginaAtual: 0,
     titulo: 'Vetor gradiente',
-    texto: 'O gradiente junta as derivadas parciais em um vetor: grad f = (df/dx, df/dy).\nEle aponta para o crescimento mais rapido da funcao; o sentido contrario aponta para a descida mais rapida.\nQuando um agente segue o gradiente da distancia ate Zion, calculo vira perseguicao.'
+    paginas: [
+      {
+        secao: 'FUNDAMENTO',
+        titulo: 'Duas derivadas formam uma direcao',
+        resumo: 'O gradiente reune as derivadas parciais em um vetor. A primeira componente mede a mudanca em x; a segunda mede a mudanca em y. A ordem nunca deve ser invertida.',
+        formula: 'grad f(x,y)=(df/dx, df/dy)',
+        passos: [
+          'Calcule primeiro df/dx.',
+          'Depois calcule df/dy.',
+          'Monte o vetor nessa mesma ordem.',
+          'So entao substitua o ponto pedido.'
+        ],
+        dica: 'Gradiente nao e um unico numero: ele possui uma componente para cada eixo.'
+      },
+      {
+        secao: 'CONSTRUCAO',
+        titulo: 'Gradiente de x^2+y^2',
+        resumo: 'Ao derivar f(x,y)=x^2+y^2 em x, o termo y^2 vira zero. Ao derivar em y, acontece o contrario.',
+        formula: 'df/dx=2x | df/dy=2y | grad f=(2x,2y)',
+        passos: [
+          'Em x: x^2 gera 2x e y^2 gera 0.',
+          'Em y: x^2 gera 0 e y^2 gera 2y.',
+          'Primeira componente: 2x.',
+          'Segunda componente: 2y.'
+        ],
+        dica: 'Calcule as duas derivadas antes de inserir as coordenadas do ponto.'
+      },
+      {
+        secao: 'AVALIACAO NO PONTO',
+        titulo: 'Transforme a formula em vetor numerico',
+        resumo: 'Depois de encontrar grad f=(2x,2y), avaliar no ponto (1,2) significa substituir x por 1 na primeira componente e y por 2 na segunda.',
+        formula: 'grad f(1,2)=(2(1),2(2))=(2,4)',
+        passos: [
+          'A coordenada x vale 1.',
+          'A coordenada y vale 2.',
+          'Calcule cada componente separadamente.',
+          'Mantenha a resposta na ordem (x,y).'
+        ],
+        dica: 'O ponto (1,2) nao e o gradiente; ele e a entrada usada para calcular o gradiente.'
+      },
+      {
+        secao: 'PROTOCOLO DA WAVE 3',
+        titulo: 'Leia a direcao de maior crescimento',
+        resumo: 'O vetor gradiente aponta para onde a funcao cresce mais rapidamente. Para f=x^2+y^2 no ponto (1,2), ele aponta duas unidades em x e quatro em y.',
+        formula: 'grad f(1,2)=(2,4)',
+        passos: [
+          'Derive: grad f=(2x,2y).',
+          'Substitua o ponto (1,2).',
+          'Obtenha o vetor (2,4).',
+          'Escolha a alternativa com a mesma ordem.'
+        ],
+        dica: 'O vetor (4,2) esta invertido e, portanto, aponta para outra direcao.'
+      }
+    ]
   },
   {
     id: 4,
     nome: 'ARQUIVO_04.exe',
     aberto: false,
+    concluido: false,
+    paginaAtual: 0,
     titulo: 'Pontos criticos',
-    texto: 'Pontos criticos aparecem quando o gradiente zera: ali a funcao para de subir ou descer naquele instante.\nA Hessiana organiza as segundas derivadas e revela a curvatura local.\nCurvatura positiva em todas as direcoes sugere minimo; negativa sugere maximo; sinais misturados indicam ponto de sela.'
+    paginas: [
+      {
+        secao: 'FUNDAMENTO',
+        titulo: 'Onde a inclinacao desaparece',
+        resumo: 'Um ponto critico ocorre quando as duas componentes do gradiente valem zero. Isso identifica um candidato a minimo, maximo ou ponto de sela, mas ainda nao diz qual deles.',
+        formula: 'df/dx=0 e df/dy=0',
+        passos: [
+          'Calcule as duas derivadas parciais.',
+          'Iguale ambas a zero.',
+          'Resolva o sistema para encontrar o ponto.',
+          'Use a curvatura para classifica-lo.'
+        ],
+        dica: 'Gradiente zero e apenas o inicio da classificacao.'
+      },
+      {
+        secao: 'HESSIANA',
+        titulo: 'A matriz que mede a curvatura',
+        resumo: 'A Hessiana organiza as segundas derivadas. Para funcoes de duas variaveis, o determinante D permite verificar se a superficie curva para o mesmo lado ou para lados opostos.',
+        formula: 'D=fxx*fyy-(fxy)^2',
+        passos: [
+          'Calcule fxx: derive duas vezes em x.',
+          'Calcule fyy: derive duas vezes em y.',
+          'Calcule fxy: derive primeiro em x e depois em y.',
+          'Substitua tudo na formula de D.'
+        ],
+        dica: 'Os indices xx, yy e xy indicam a ordem das derivacoes.'
+      },
+      {
+        secao: 'CLASSIFICACAO',
+        titulo: 'Decodifique o sinal de D',
+        resumo: 'O sinal do determinante separa os casos. Quando D e positivo, use o sinal de fxx para decidir entre minimo e maximo. Quando D e negativo, a curvatura muda de sentido.',
+        formula: 'D>0,fxx>0: minimo | D>0,fxx<0: maximo | D<0: sela',
+        passos: [
+          'D maior que zero e fxx positivo: minimo.',
+          'D maior que zero e fxx negativo: maximo.',
+          'D menor que zero: ponto de sela.',
+          'D igual a zero: teste inconclusivo.'
+        ],
+        dica: 'Sinais misturados nas curvaturas sao a assinatura de um ponto de sela.'
+      },
+      {
+        secao: 'PROTOCOLO DA WAVE 4',
+        titulo: 'Classifique f=x^2-y^2 em (0,0)',
+        resumo: 'O gradiente e (2x,-2y), que zera em (0,0). As segundas derivadas possuem sinais opostos, indicando que a superficie sobe em uma direcao e desce na outra.',
+        formula: 'fxx=2 | fyy=-2 | fxy=0 | D=2(-2)-0=-4',
+        passos: [
+          'O ponto (0,0) e critico.',
+          'O determinante da Hessiana vale -4.',
+          'Como D e negativo, as curvaturas se opõem.',
+          'Classificacao de verificacao: ponto de sela.'
+        ],
+        dica: 'Imagine uma sela: curva para cima em um eixo e para baixo no outro.'
+      }
+    ]
   }
 ]
 
@@ -130,12 +355,17 @@ let balas = []
 let balasInimigas = []
 let inimigos = []
 let particulas = []
+let ondasImpacto = []
 let score = 0
 let pontos = 0
 let wave = 1
 let questaoAtual = null
 let alternativaSelecionada = null
 let arquivoTutorialAtivo = tutorialArquivos[0]
+let tutorialBotoes = {
+  anterior: null,
+  proxima: null
+}
 let shopBotoes = []
 let questaoBotoes = []
 let ultimoFrame = performance.now()
@@ -145,7 +375,21 @@ let proximaPerguntaBoss = 0
 let gameoverTitulo = 'FIM DA CONEXAO'
 let gameoverTexto = 'Zion foi desconectado da Matrix.'
 let efeitos = {
-  glitchAte: 0
+  glitchAte: 0,
+  shakeAte: 0,
+  shakeForca: 0,
+  flashAte: 0,
+  flashCor: '#ff2020'
+}
+let desempenho = {
+  mediaDelta: 16.7,
+  detalhe: 2,
+  proximaAvaliacao: 0
+}
+let cacheVinhetaTela = {
+  largura: 0,
+  altura: 0,
+  gradiente: null
 }
 let dialogoFaculdadeIndice = 0
 let dialogoCasaIndice = 0
@@ -281,6 +525,7 @@ function resetarJogo() {
   balasInimigas = []
   inimigos = []
   particulas = []
+  ondasImpacto = []
   score = 0
   pontos = 0
   wave = 1
@@ -290,12 +535,20 @@ function resetarJogo() {
   aguardandoPunitivo = false
   bossPerguntaResolvida = false
   proximaPerguntaBoss = 0
+  efeitos.glitchAte = 0
+  efeitos.shakeAte = 0
+  efeitos.shakeForca = 0
+  efeitos.flashAte = 0
 
   for (let i = 0; i < tutorialArquivos.length; i++) {
     tutorialArquivos[i].aberto = false
+    tutorialArquivos[i].concluido = false
+    tutorialArquivos[i].paginaAtual = 0
   }
 
   arquivoTutorialAtivo = tutorialArquivos[0]
+  tutorialBotoes.anterior = null
+  tutorialBotoes.proxima = null
   dialogoFaculdadeIndice = 0
   prepararCenaCaminho()
   prepararCenaCasa()
@@ -309,8 +562,12 @@ function iniciarWave(numeroWave) {
   balas = []
   balasInimigas = []
   particulas = []
+  ondasImpacto = []
   inimigos = spawnWave(canvas, wave)
   aguardandoPunitivo = false
+  desempenho.mediaDelta = 16.7
+  desempenho.detalhe = 2
+  desempenho.proximaAvaliacao = 0
 
   if (wave === 4) {
     bossPerguntaResolvida = false
@@ -443,8 +700,89 @@ function atirar(agora) {
     return
   }
 
-  balas.push(criarBala(player))
+  if (balas.length >= LIMITE_BALAS_PLAYER) {
+    return
+  }
+
+  const bala = criarBala(player)
+  balas.push(bala)
+  const bocaX = player.x + Math.cos(player.angulo) * 42
+  const bocaY = player.y + Math.sin(player.angulo) * 42
+  emitirParticulas(bocaX, bocaY, '#b7ffd0', desempenho.detalhe === 0 ? 1 : 3)
+  adicionarOndaImpacto(bocaX, bocaY, '#00ff41', 24)
+  agitarTela(1.4, 70)
   player.ultimoTiro = agora
+}
+
+function emitirParticulas(x, y, cor, quantidade) {
+  const disponiveis = LIMITE_PARTICULAS - particulas.length
+  if (disponiveis <= 0) {
+    return
+  }
+
+  const fator = desempenho.detalhe === 0 ? 0.35 : (desempenho.detalhe === 1 ? 0.65 : 1)
+  const total = Math.min(disponiveis, Math.max(1, Math.ceil(quantidade * fator)))
+  const novas = criarParticulas(x, y, cor, total)
+
+  for (let i = 0; i < novas.length; i++) {
+    particulas.push(novas[i])
+  }
+}
+
+function adicionarOndaImpacto(x, y, cor, tamanho) {
+  if (ondasImpacto.length >= LIMITE_ONDAS) {
+    ondasImpacto.shift()
+  }
+  ondasImpacto.push(criarOndaImpacto(x, y, cor, tamanho))
+}
+
+function atualizarNivelDetalhe(delta, agora) {
+  desempenho.mediaDelta = desempenho.mediaDelta * 0.92 + delta * 0.08
+
+  if (agora < desempenho.proximaAvaliacao) {
+    return
+  }
+
+  const carga =
+    balas.length +
+    balasInimigas.length +
+    particulas.length * 0.35 +
+    inimigos.length * 5
+
+  if (desempenho.mediaDelta > 23 || carga > 360) {
+    desempenho.detalhe = 0
+  } else if (desempenho.mediaDelta > 18.5 || carga > 210) {
+    desempenho.detalhe = 1
+  } else {
+    desempenho.detalhe = 2
+  }
+
+  desempenho.proximaAvaliacao = agora + 500
+}
+
+function agitarTela(forca, duracao, corFlash) {
+  const agora = performance.now()
+  efeitos.shakeAte = Math.max(efeitos.shakeAte, agora + duracao)
+  efeitos.shakeForca = Math.max(efeitos.shakeForca, forca)
+
+  if (corFlash) {
+    efeitos.flashAte = Math.max(efeitos.flashAte, agora + Math.min(180, duracao))
+    efeitos.flashCor = corFlash
+  }
+}
+
+function obterDeslocamentoCamera(agora) {
+  if (agora >= efeitos.shakeAte) {
+    efeitos.shakeForca = 0
+    return { x: 0, y: 0 }
+  }
+
+  const restante = Math.max(0, (efeitos.shakeAte - agora) / 220)
+  const forca = efeitos.shakeForca * Math.min(1, restante)
+  return {
+    x: (Math.random() - 0.5) * forca * 2,
+    y: (Math.random() - 0.5) * forca * 2
+  }
 }
 
 function atualizarJogo(agora) {
@@ -461,18 +799,29 @@ function atualizarJogo(agora) {
   removerBalas(balasInimigas, canvas)
   moverInimigos(inimigos, player)
 
-  const novasBalas = gerarDisparosInimigos(inimigos, agora)
+  const vagasBalasInimigas = LIMITE_BALAS_INIMIGAS - balasInimigas.length
+  const novasBalas = gerarDisparosInimigos(inimigos, agora, vagasBalasInimigas)
   for (let i = 0; i < novasBalas.length; i++) {
     balasInimigas.push(novasBalas[i])
   }
 
   const resultadoColisao = verificarColisaoInimigos(inimigos, balas)
 
+  for (let i = 0; i < resultadoColisao.impactos.length; i++) {
+    const impacto = resultadoColisao.impactos[i]
+    const cor = impacto.bloqueado ? '#ffffff' : impacto.cor
+    emitirParticulas(impacto.x, impacto.y, cor, impacto.bloqueado ? 5 : 9)
+    adicionarOndaImpacto(impacto.x, impacto.y, cor, impacto.bloqueado ? 34 : 46)
+    agitarTela(impacto.bloqueado ? 2 : 3, 95)
+  }
+
   for (let i = 0; i < resultadoColisao.mortos.length; i++) {
     const morto = resultadoColisao.mortos[i]
     score += morto.pontos
     pontos += morto.pontos
-    particulas = particulas.concat(criarParticulas(morto.x, morto.y, morto.cor, morto.tipo === 'boss' ? 70 : 22))
+    emitirParticulas(morto.x, morto.y, morto.cor, morto.tipo === 'boss' ? 70 : 22)
+    adicionarOndaImpacto(morto.x, morto.y, morto.cor, morto.tipo === 'boss' ? 180 : 92)
+    agitarTela(morto.tipo === 'boss' ? 18 : 7, morto.tipo === 'boss' ? 650 : 220, morto.cor)
 
     if (morto.tipo === 'boss') {
       vencerJogo()
@@ -481,11 +830,15 @@ function atualizarJogo(agora) {
   }
 
   if (verificarColisaoBalasPlayer(balasInimigas, player, agora)) {
-    particulas = particulas.concat(criarParticulas(player.x, player.y, '#ff2020', 16))
+    emitirParticulas(player.x, player.y, '#ff2020', 16)
+    adicionarOndaImpacto(player.x, player.y, '#ff2020', 86)
+    agitarTela(12, 380, '#ff2020')
   }
 
   if (verificarColisaoPlayerInimigos(inimigos, player, agora)) {
-    particulas = particulas.concat(criarParticulas(player.x, player.y, '#ff2020', 12))
+    emitirParticulas(player.x, player.y, '#ff2020', 12)
+    adicionarOndaImpacto(player.x, player.y, '#ff6020', 72)
+    agitarTela(10, 320, '#ff2020')
   }
 
   const expirados = removerInimigosExpirados(inimigos, agora)
@@ -493,12 +846,12 @@ function atualizarJogo(agora) {
     if (expirados[i].tipo === 'punitivo') {
       score += 30
       pontos += 30
-      particulas = particulas.concat(criarParticulas(expirados[i].x, expirados[i].y, '#8b0000', 36))
+      emitirParticulas(expirados[i].x, expirados[i].y, '#8b0000', 36)
     }
   }
 
   atualizarParticulas(particulas)
-  removerParticulas(particulas)
+  atualizarOndasImpacto(ondasImpacto)
 
   if (player.vida <= 0) {
     gameoverTitulo = 'FIM DA CONEXAO'
@@ -553,12 +906,20 @@ function vencerJogo() {
   trocarEstado(STATE_GAMEOVER)
 }
 
-function desenharJogo() {
-  desenharInimigos(ctx, inimigos)
-  desenharBalas(ctx, balas)
-  desenharBalas(ctx, balasInimigas)
-  desenharPlayer(ctx, player)
-  desenharParticulas(ctx, particulas)
+function desenharJogo(agora) {
+  const camera = obterDeslocamentoCamera(agora)
+  const detalhe = desempenho.detalhe
+
+  ctx.save()
+  ctx.translate(camera.x, camera.y)
+  desenharArenaMatrix(ctx, canvas, agora, wave, player, detalhe)
+  desenharOndasImpacto(ctx, ondasImpacto, detalhe)
+  desenharInimigos(ctx, inimigos, agora, detalhe)
+  desenharBalas(ctx, balas, detalhe)
+  desenharBalas(ctx, balasInimigas, detalhe)
+  desenharPlayer(ctx, player, agora, detalhe)
+  desenharParticulas(ctx, particulas, detalhe)
+  ctx.restore()
   desenharHUD(ctx, canvas, player, score, wave, pontos)
 }
 
@@ -1165,88 +1526,347 @@ function desenharCutscene(agora) {
 }
 
 function desenharTutorial(agora) {
-  const todosAbertos = tutorialArquivos.every(function(arquivo) {
-    return arquivo.aberto
-  })
-  const gapX = canvas.width < 760 ? 28 : 42
-  const gapY = canvas.width < 760 ? 28 : 34
-  const margemLateral = canvas.width < 760 ? 32 : 80
-  const colunas = canvas.width < 760 ? 2 : 4
-  const cardW = Math.min(230, (canvas.width - margemLateral - gapX * (colunas - 1)) / colunas)
-  const cardH = canvas.width < 760 ? 78 : 92
-  const inicioX = canvas.width / 2 - ((cardW * colunas + gapX * (colunas - 1)) / 2)
-  const inicioY = canvas.height < 680 ? 118 : Math.max(140, canvas.height * 0.2)
-  const totalLinhasCards = Math.ceil(tutorialArquivos.length / colunas)
-  const cardsBottom = inicioY + totalLinhasCards * cardH + (totalLinhasCards - 1) * gapY
-  const espacoDepoisCards = canvas.height < 720 ? 54 : 68
+  const telaBaixa = canvas.height < 650
+  const telaEstreita = canvas.width < 760
+  const indiceArquivo = tutorialArquivos.indexOf(arquivoTutorialAtivo)
+  const pagina = arquivoTutorialAtivo.paginas[arquivoTutorialAtivo.paginaAtual]
+  const painelW = Math.min(1040, canvas.width - (telaEstreita ? 20 : 48))
+  const painelX = canvas.width / 2 - painelW / 2
+  const painelY = telaBaixa ? 76 : 118
+  const painelH = Math.max(300, Math.min(570, canvas.height - painelY - (telaBaixa ? 12 : 34)))
+  const painelEstreito = painelW < 760
+  const compacto = painelH < 430 || painelEstreito
+
+  arquivoTutorialAtivo.aberto = true
 
   ctx.save()
   ctx.textAlign = 'center'
   ctx.fillStyle = '#00ff41'
   ctx.shadowBlur = 18
   ctx.shadowColor = '#00ff41'
-  ctx.font = '28px Courier New'
-  ctx.fillText('ARQUIVOS CORROMPIDOS', canvas.width / 2, 70)
+  ctx.font = telaBaixa ? '17px Courier New' : '24px Courier New'
+  ctx.fillText(
+    arquivoTutorialAtivo.nome + '  //  MODULO ' + (indiceArquivo + 1) + ' DE ' + tutorialArquivos.length,
+    canvas.width / 2,
+    telaBaixa ? 24 : 38
+  )
+  desenharProgressoArquivosTutorial(indiceArquivo, telaBaixa ? 48 : 72, telaEstreita)
 
-  for (let i = 0; i < tutorialArquivos.length; i++) {
-    const arquivo = tutorialArquivos[i]
-    const coluna = i % colunas
-    const linha = Math.floor(i / colunas)
-    const x = inicioX + coluna * (cardW + gapX)
-    const y = inicioY + linha * (cardH + gapY)
-
-    arquivo.rect = { x: x, y: y, w: cardW, h: cardH }
-    ctx.fillStyle = arquivo.aberto ? 'rgba(0, 255, 65, 0.18)' : 'rgba(0, 0, 0, 0.72)'
-    ctx.strokeStyle = arquivo === arquivoTutorialAtivo ? '#d6ffe2' : '#00ff41'
-    ctx.lineWidth = arquivo === arquivoTutorialAtivo ? 3 : 1
-    ctx.fillRect(x, y, cardW, cardH)
-    ctx.strokeRect(x, y, cardW, cardH)
-    ctx.fillStyle = arquivo.aberto ? '#d6ffe2' : '#00ff41'
-    ctx.font = canvas.width < 760 ? '13px Courier New' : '16px Courier New'
-    ctx.fillText(arquivo.nome, x + cardW / 2, y + 39)
-    ctx.font = canvas.width < 760 ? '11px Courier New' : '13px Courier New'
-    ctx.fillText(arquivo.aberto ? 'DECRIPTOGRAFADO' : 'CLIQUE PARA ABRIR', x + cardW / 2, y + (cardH - 28))
-  }
-
-  const painelW = Math.min(780, canvas.width - 36)
-  const painelX = canvas.width / 2 - painelW / 2
-  const alturaPainelDesejada = canvas.height < 720 ? 236 : 278
-  const rodapeReservado = todosAbertos ? 122 : 78
-  const alturaPainelDisponivel = canvas.height - cardsBottom - espacoDepoisCards - rodapeReservado
-  const painelH = Math.max(126, Math.min(alturaPainelDesejada, alturaPainelDisponivel))
-  const painelY = cardsBottom + espacoDepoisCards
   ctx.textAlign = 'left'
   ctx.fillStyle = 'rgba(0, 12, 4, 0.84)'
   ctx.strokeStyle = '#00ff41'
   ctx.lineWidth = 2
   ctx.fillRect(painelX, painelY, painelW, painelH)
   ctx.strokeRect(painelX, painelY, painelW, painelH)
-  ctx.fillStyle = '#d6ffe2'
-  ctx.font = '20px Courier New'
-  ctx.fillText(arquivoTutorialAtivo.titulo, painelX + 26, painelY + 38)
-  quebrarTexto(arquivoTutorialAtivo.texto, painelX + 26, painelY + 78, painelW - 52, 22, '15px Courier New')
 
-  if (todosAbertos) {
-    const botao = obterBotaoEntrarMatrix()
-    ctx.textAlign = 'center'
-    ctx.fillStyle = mouseSobre(botao) ? 'rgba(0, 255, 65, 0.3)' : 'rgba(0, 255, 65, 0.14)'
-    ctx.strokeStyle = '#00ff41'
-    ctx.fillRect(botao.x, botao.y, botao.w, botao.h)
-    ctx.strokeRect(botao.x, botao.y, botao.w, botao.h)
-    ctx.fillStyle = '#ffffff'
-    ctx.font = '20px Courier New'
-    ctx.fillText('ENTRAR NA MATRIX', botao.x + botao.w / 2, botao.y + 32)
-  } else {
-    ctx.fillStyle = '#00ff41'
-    ctx.textAlign = 'center'
-    ctx.font = '16px Courier New'
-    ctx.fillText('Abra os 4 arquivos para liberar a entrada.', canvas.width / 2, canvas.height - 42)
-  }
+  ctx.fillStyle = '#73ff9b'
+  ctx.font = compacto ? '11px Courier New' : '13px Courier New'
+  ctx.fillText(pagina.secao, painelX + 26, painelY + (compacto ? 20 : 24))
+
+  ctx.fillStyle = '#d6ffe2'
+  ctx.font = painelEstreito ? '14px Courier New' : (compacto ? '17px Courier New' : '21px Courier New')
+  ctx.fillText(pagina.titulo, painelX + 26, painelY + (compacto ? 42 : 48))
+  ctx.textAlign = 'right'
+  ctx.fillStyle = '#00ff41'
+  ctx.font = compacto ? '11px Courier New' : '13px Courier New'
+  ctx.fillText(
+    (painelEstreito ? '' : arquivoTutorialAtivo.titulo + '  |  ') +
+      'PAGINA ' + (arquivoTutorialAtivo.paginaAtual + 1) + '/' + arquivoTutorialAtivo.paginas.length,
+    painelX + painelW - 26,
+    painelY + 24
+  )
+
+  ctx.strokeStyle = 'rgba(0, 255, 65, 0.42)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(painelX + 24, painelY + (compacto ? 56 : 66))
+  ctx.lineTo(painelX + painelW - 24, painelY + (compacto ? 56 : 66))
+  ctx.stroke()
+
+  desenharConteudoPaginaTutorial(pagina, painelX, painelY, painelW, painelH, compacto)
+  desenharNavegacaoTutorial(painelX, painelY, painelW, painelH, compacto, indiceArquivo)
 
   ctx.restore()
   if (Math.random() < 0.04) {
     desenharGlitch(agora, 0.16)
   }
+}
+
+function desenharProgressoArquivosTutorial(indiceAtivo, y, telaEstreita) {
+  const larguraTotal = Math.min(telaEstreita ? 250 : 420, canvas.width - 48)
+  const inicioX = canvas.width / 2 - larguraTotal / 2
+  const segmentoW = larguraTotal / tutorialArquivos.length
+
+  ctx.save()
+  ctx.shadowBlur = 8
+  ctx.shadowColor = '#00ff41'
+
+  for (let i = 0; i < tutorialArquivos.length; i++) {
+    const arquivo = tutorialArquivos[i]
+    const x = inicioX + i * segmentoW
+    const ativo = i === indiceAtivo
+
+    ctx.fillStyle = arquivo.concluido
+      ? '#00ff41'
+      : (ativo ? '#d6ffe2' : 'rgba(0, 255, 65, 0.12)')
+    ctx.fillRect(x + 3, y, segmentoW - 6, ativo ? 5 : 3)
+
+    if (!telaEstreita) {
+      ctx.fillStyle = ativo || arquivo.concluido ? '#8affaa' : '#31523a'
+      ctx.textAlign = 'center'
+      ctx.font = '10px Courier New'
+      ctx.fillText('0' + (i + 1), x + segmentoW / 2, y + 12)
+    }
+  }
+
+  ctx.restore()
+}
+
+function desenharConteudoPaginaTutorial(pagina, painelX, painelY, painelW, painelH, compacto) {
+  const margem = compacto ? 20 : 28
+  const topo = painelY + (compacto ? 70 : 84)
+  const limiteInferior = painelY + painelH - (compacto ? 48 : 62)
+  const duasColunas = painelW >= 760
+  const colunaGap = compacto ? 20 : 34
+  const colunaW = duasColunas ? (painelW - margem * 2 - colunaGap) / 2 : painelW - margem * 2
+  const esquerdaX = painelX + margem
+  const direitaX = esquerdaX + colunaW + colunaGap
+  const fonteTexto = compacto ? '11px Courier New' : '14px Courier New'
+  const alturaLinha = compacto ? 15 : 20
+
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#00ff41'
+  ctx.font = compacto ? '10px Courier New' : '12px Courier New'
+  ctx.fillText('RESUMO', esquerdaX, topo)
+
+  let yEsquerda = topo + (compacto ? 16 : 22)
+  yEsquerda = desenharParagrafoTutorial(
+    pagina.resumo,
+    esquerdaX,
+    yEsquerda,
+    colunaW,
+    alturaLinha,
+    fonteTexto,
+    '#c9ffda',
+    duasColunas ? (compacto ? 4 : 6) : 3
+  )
+
+  const formulaY = yEsquerda + (compacto ? 8 : 14)
+  const formulaH = compacto ? 42 : 58
+  ctx.fillStyle = 'rgba(0, 255, 65, 0.1)'
+  ctx.strokeStyle = '#00ff41'
+  ctx.lineWidth = 1
+  ctx.fillRect(esquerdaX, formulaY, colunaW, formulaH)
+  ctx.strokeRect(esquerdaX, formulaY, colunaW, formulaH)
+  ctx.fillStyle = '#ffffff'
+  ctx.font = compacto ? '11px Courier New' : '14px Courier New'
+  desenharParagrafoTutorial(
+    pagina.formula,
+    esquerdaX + 14,
+    formulaY + (compacto ? 14 : 18),
+    colunaW - 28,
+    compacto ? 14 : 18,
+    compacto ? '11px Courier New' : '14px Courier New',
+    '#ffffff',
+    2
+  )
+
+  if (duasColunas) {
+    desenharPassosTutorial(pagina.passos, direitaX, topo, colunaW, compacto)
+  } else {
+    const passosY = formulaY + formulaH + (compacto ? 8 : 14)
+    desenharPassosTutorialGrade(pagina.passos, esquerdaX, passosY, colunaW, painelH >= 380)
+  }
+
+  if (duasColunas || painelH >= 360) {
+    const dicaY = limiteInferior - (compacto ? 26 : 34)
+    ctx.fillStyle = 'rgba(115, 255, 155, 0.1)'
+    ctx.fillRect(esquerdaX, dicaY, painelW - margem * 2, compacto ? 26 : 34)
+    ctx.fillStyle = '#73ff9b'
+    ctx.font = compacto ? '10px Courier New' : '12px Courier New'
+    desenharParagrafoTutorial(
+      'DICA: ' + pagina.dica,
+      esquerdaX + 12,
+      dicaY + (compacto ? 8 : 10),
+      painelW - margem * 2 - 24,
+      compacto ? 12 : 15,
+      compacto ? '10px Courier New' : '12px Courier New',
+      '#73ff9b',
+      2
+    )
+  }
+}
+
+function desenharPassosTutorial(passos, x, y, largura, compacto) {
+  ctx.fillStyle = '#00ff41'
+  ctx.font = compacto ? '10px Courier New' : '12px Courier New'
+  ctx.fillText('PASSO A PASSO', x, y)
+
+  const inicioY = y + (compacto ? 16 : 24)
+  const alturaPasso = compacto ? 24 : 38
+
+  for (let i = 0; i < passos.length; i++) {
+    const passoY = inicioY + i * alturaPasso
+    ctx.fillStyle = 'rgba(0, 255, 65, 0.12)'
+    ctx.fillRect(x, passoY, compacto ? 18 : 24, compacto ? 18 : 24)
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.font = compacto ? '10px Courier New' : '12px Courier New'
+    ctx.fillText(String(i + 1), x + (compacto ? 9 : 12), passoY + (compacto ? 4 : 6))
+    ctx.textAlign = 'left'
+    desenharParagrafoTutorial(
+      passos[i],
+      x + (compacto ? 26 : 34),
+      passoY + (compacto ? 3 : 4),
+      largura - (compacto ? 26 : 34),
+      compacto ? 13 : 17,
+      compacto ? '10px Courier New' : '12px Courier New',
+      '#c9ffda',
+      compacto ? 2 : 2
+    )
+  }
+}
+
+function desenharPassosTutorialGrade(passos, x, y, largura, expandido) {
+  ctx.fillStyle = '#00ff41'
+  ctx.font = '10px Courier New'
+  ctx.fillText('PASSO A PASSO', x, y)
+
+  const gap = 7
+  const itemW = (largura - gap) / 2
+  const itemH = expandido ? 44 : 36
+  const inicioY = y + 16
+
+  for (let i = 0; i < passos.length; i++) {
+    const coluna = i % 2
+    const linha = Math.floor(i / 2)
+    const itemX = x + coluna * (itemW + gap)
+    const itemY = inicioY + linha * (itemH + gap)
+
+    ctx.fillStyle = 'rgba(0, 255, 65, 0.08)'
+    ctx.strokeStyle = 'rgba(0, 255, 65, 0.32)'
+    ctx.fillRect(itemX, itemY, itemW, itemH)
+    ctx.strokeRect(itemX, itemY, itemW, itemH)
+    ctx.fillStyle = '#00ff41'
+    ctx.textAlign = 'center'
+    ctx.font = '10px Courier New'
+    ctx.fillText(String(i + 1), itemX + 11, itemY + 9)
+    desenharParagrafoTutorial(
+      passos[i],
+      itemX + 22,
+      itemY + 6,
+      itemW - 28,
+      12,
+      '9px Courier New',
+      '#c9ffda',
+      expandido ? 3 : 2
+    )
+  }
+}
+
+function desenharParagrafoTutorial(texto, x, y, largura, alturaLinha, fonte, cor, maxLinhas) {
+  ctx.font = fonte
+  ctx.fillStyle = cor
+  ctx.textAlign = 'left'
+
+  const palavras = texto.split(' ')
+  const linhas = []
+  let linha = ''
+
+  for (let i = 0; i < palavras.length; i++) {
+    const teste = linha + palavras[i] + ' '
+
+    if (ctx.measureText(teste).width > largura && linha !== '') {
+      linhas.push(linha.trim())
+      linha = palavras[i] + ' '
+    } else {
+      linha = teste
+    }
+  }
+
+  if (linha.trim()) {
+    linhas.push(linha.trim())
+  }
+
+  const limite = Math.min(linhas.length, maxLinhas || linhas.length)
+  for (let i = 0; i < limite; i++) {
+    let textoLinha = linhas[i]
+    if (i === limite - 1 && linhas.length > limite) {
+      textoLinha = textoLinha.replace(/[.,;:]?$/, '...')
+    }
+    ctx.fillText(textoLinha, x, y + i * alturaLinha)
+  }
+
+  return y + limite * alturaLinha
+}
+
+function desenharNavegacaoTutorial(painelX, painelY, painelW, painelH, compacto, indiceArquivo) {
+  const arquivo = arquivoTutorialAtivo
+  const botaoW = compacto ? 126 : 190
+  const botaoH = compacto ? 28 : 36
+  const botaoY = painelY + painelH - botaoH - (compacto ? 8 : 12)
+  const podeVoltar = arquivo.paginaAtual > 0 || indiceArquivo > 0
+  const ultimaPagina = arquivo.paginaAtual === arquivo.paginas.length - 1
+  const ultimoArquivo = indiceArquivo === tutorialArquivos.length - 1
+  let textoProximo = 'PROXIMA PAGINA >'
+
+  if (ultimaPagina && !ultimoArquivo) {
+    textoProximo = 'LIBERAR ARQUIVO 0' + (indiceArquivo + 2)
+  }
+
+  if (ultimaPagina && ultimoArquivo) {
+    textoProximo = 'ENTRAR NA MATRIX'
+  }
+
+  tutorialBotoes.anterior = {
+    x: painelX + (compacto ? 14 : 24),
+    y: botaoY,
+    w: botaoW,
+    h: botaoH
+  }
+  tutorialBotoes.proxima = {
+    x: painelX + painelW - botaoW - (compacto ? 14 : 24),
+    y: botaoY,
+    w: botaoW,
+    h: botaoH
+  }
+
+  desenharBotaoTutorial(
+    tutorialBotoes.anterior,
+    '< ANTERIOR',
+    podeVoltar,
+    compacto
+  )
+  desenharBotaoTutorial(
+    tutorialBotoes.proxima,
+    textoProximo,
+    true,
+    compacto
+  )
+
+  ctx.textAlign = 'center'
+  for (let i = 0; i < arquivo.paginas.length; i++) {
+    const x = painelX + painelW / 2 + (i - (arquivo.paginas.length - 1) / 2) * (compacto ? 18 : 24)
+    ctx.fillStyle = i === arquivo.paginaAtual ? '#ffffff' : 'rgba(0, 255, 65, 0.28)'
+    ctx.beginPath()
+    ctx.arc(x, botaoY + botaoH / 2, i === arquivo.paginaAtual ? 5 : 3, 0, Math.PI * 2)
+    ctx.fill()
+  }
+}
+
+function desenharBotaoTutorial(rect, texto, habilitado, compacto) {
+  const hover = habilitado && mouseSobre(rect)
+  ctx.fillStyle = habilitado
+    ? (hover ? 'rgba(0, 255, 65, 0.3)' : 'rgba(0, 255, 65, 0.12)')
+    : 'rgba(40, 60, 46, 0.25)'
+  ctx.strokeStyle = habilitado ? '#00ff41' : '#36563f'
+  ctx.lineWidth = 1
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
+  ctx.strokeRect(rect.x, rect.y, rect.w, rect.h)
+  ctx.fillStyle = habilitado ? '#d6ffe2' : '#52705a'
+  ctx.textAlign = 'center'
+  ctx.font = compacto ? '10px Courier New' : '12px Courier New'
+  ctx.fillText(texto, rect.x + rect.w / 2, rect.y + (compacto ? 8 : 11))
 }
 
 function desenharGameover() {
@@ -1281,9 +1901,60 @@ function desenharGlitch(agora, intensidade) {
 }
 
 function desenharEfeitosTela(agora) {
+  const dentroDaMatrix =
+    estado === STATE_CUTSCENE ||
+    estado === STATE_TUTORIAL ||
+    estado === STATE_PLAYING ||
+    estado === STATE_QUESTION ||
+    estado === STATE_SHOP ||
+    estado === STATE_GAMEOVER
+
+  if (dentroDaMatrix) {
+    ctx.save()
+    ctx.fillStyle = obterVinhetaTela()
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    ctx.restore()
+  }
+
+  if (agora < efeitos.flashAte) {
+    const alpha = Math.max(0, (efeitos.flashAte - agora) / 180) * 0.22
+    ctx.save()
+    ctx.globalAlpha = alpha
+    ctx.fillStyle = efeitos.flashCor
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.restore()
+  }
+
   if (agora < efeitos.glitchAte) {
     desenharGlitch(agora, 0.9)
   }
+}
+
+function obterVinhetaTela() {
+  if (
+    cacheVinhetaTela.gradiente &&
+    cacheVinhetaTela.largura === canvas.width &&
+    cacheVinhetaTela.altura === canvas.height
+  ) {
+    return cacheVinhetaTela.gradiente
+  }
+
+  const gradiente = ctx.createRadialGradient(
+    canvas.width / 2,
+    canvas.height / 2,
+    Math.min(canvas.width, canvas.height) * 0.22,
+    canvas.width / 2,
+    canvas.height / 2,
+    Math.max(canvas.width, canvas.height) * 0.72
+  )
+  gradiente.addColorStop(0, 'rgba(0, 0, 0, 0)')
+  gradiente.addColorStop(1, 'rgba(0, 0, 0, 0.48)')
+
+  cacheVinhetaTela.largura = canvas.width
+  cacheVinhetaTela.altura = canvas.height
+  cacheVinhetaTela.gradiente = gradiente
+  return gradiente
 }
 
 function quebrarTexto(texto, x, y, largura, alturaLinha, fonte) {
@@ -1316,17 +1987,55 @@ function quebrarTexto(texto, x, y, largura, alturaLinha, fonte) {
   ctx.restore()
 }
 
-function obterBotaoEntrarMatrix() {
-  return {
-    x: canvas.width / 2 - 140,
-    y: canvas.height - 94,
-    w: 280,
-    h: 52
+function mouseSobre(rect) {
+  return mouse.x >= rect.x && mouse.x <= rect.x + rect.w && mouse.y >= rect.y && mouse.y <= rect.y + rect.h
+}
+
+function voltarPaginaTutorial() {
+  if (arquivoTutorialAtivo.paginaAtual > 0) {
+    arquivoTutorialAtivo.paginaAtual--
+    return
+  }
+
+  const indiceAtual = tutorialArquivos.indexOf(arquivoTutorialAtivo)
+  if (indiceAtual > 0) {
+    arquivoTutorialAtivo = tutorialArquivos[indiceAtual - 1]
+    arquivoTutorialAtivo.paginaAtual = arquivoTutorialAtivo.paginas.length - 1
   }
 }
 
-function mouseSobre(rect) {
-  return mouse.x >= rect.x && mouse.x <= rect.x + rect.w && mouse.y >= rect.y && mouse.y <= rect.y + rect.h
+function avancarPaginaTutorial() {
+  const arquivo = arquivoTutorialAtivo
+  const indiceAtual = tutorialArquivos.indexOf(arquivo)
+  arquivo.aberto = true
+
+  if (arquivo.paginaAtual < arquivo.paginas.length - 1) {
+    arquivo.paginaAtual++
+    return
+  }
+
+  arquivo.concluido = true
+
+  if (indiceAtual < tutorialArquivos.length - 1) {
+    arquivoTutorialAtivo = tutorialArquivos[indiceAtual + 1]
+    arquivoTutorialAtivo.aberto = true
+    arquivoTutorialAtivo.paginaAtual = 0
+    efeitos.glitchAte = performance.now() + 240
+    return
+  }
+
+  iniciarWave(1)
+}
+
+function lidarTeclaTutorial(event) {
+  if (event.code === 'ArrowLeft') {
+    voltarPaginaTutorial()
+    return
+  }
+
+  if (event.code === 'ArrowRight' || event.code === 'Space' || event.key === 'Enter') {
+    avancarPaginaTutorial()
+  }
 }
 
 function lidarClique() {
@@ -1354,21 +2063,18 @@ function lidarClique() {
   }
 
   if (estado === STATE_TUTORIAL) {
-    for (let i = 0; i < tutorialArquivos.length; i++) {
-      const arquivo = tutorialArquivos[i]
-      if (arquivo.rect && mouseSobre(arquivo.rect)) {
-        arquivo.aberto = true
-        arquivoTutorialAtivo = arquivo
-        return
-      }
+    if (
+      tutorialBotoes.anterior &&
+      mouseSobre(tutorialBotoes.anterior) &&
+      (arquivoTutorialAtivo.paginaAtual > 0 || tutorialArquivos.indexOf(arquivoTutorialAtivo) > 0)
+    ) {
+      voltarPaginaTutorial()
+      return
     }
 
-    const todosAbertos = tutorialArquivos.every(function(arquivo) {
-      return arquivo.aberto
-    })
-
-    if (todosAbertos && mouseSobre(obterBotaoEntrarMatrix())) {
-      iniciarWave(1)
+    if (tutorialBotoes.proxima && mouseSobre(tutorialBotoes.proxima)) {
+      avancarPaginaTutorial()
+      return
     }
     return
   }
@@ -1418,11 +2124,12 @@ function lidarTeclaQuestao(event) {
 function loop(agora) {
   const delta = Math.min(33, agora - ultimoFrame)
   ultimoFrame = agora
+  atualizarNivelDetalhe(delta, agora)
 
   if (estado === STATE_CUTSCENE) {
     const tempoCutscene = agora - estadoIniciadoEm
     const velocidadeMatrix = 1 + Math.min(4.2, tempoCutscene / 1700)
-    drawMatrix(ctx, canvas, velocidadeMatrix, delta)
+    drawMatrix(ctx, canvas, velocidadeMatrix, delta, desempenho.detalhe)
   } else if (
     estado === STATE_TUTORIAL ||
     estado === STATE_PLAYING ||
@@ -1430,7 +2137,7 @@ function loop(agora) {
     estado === STATE_SHOP ||
     estado === STATE_GAMEOVER
   ) {
-    drawMatrix(ctx, canvas, 1, delta)
+    drawMatrix(ctx, canvas, 1, delta, desempenho.detalhe)
   }
 
   if (estado === STATE_FACULDADE) {
@@ -1450,12 +2157,12 @@ function loop(agora) {
     desenharTutorial(agora)
   } else if (estado === STATE_PLAYING) {
     atualizarJogo(agora)
-    desenharJogo()
+    desenharJogo(agora)
   } else if (estado === STATE_QUESTION) {
-    desenharJogo()
+    desenharJogo(agora)
     questaoBotoes = desenharQuestao(ctx, canvas, questaoAtual, alternativaSelecionada)
   } else if (estado === STATE_SHOP) {
-    desenharJogo()
+    desenharJogo(agora)
     shopBotoes = desenharShop(ctx, canvas, pontos, SHOP_ITENS)
   } else if (estado === STATE_GAMEOVER) {
     desenharGameover()
@@ -1510,6 +2217,12 @@ window.addEventListener('keydown', function(event) {
   if (event.code === 'Space' && estado === STATE_CASA) {
     event.preventDefault()
     avancarCasa()
+    return
+  }
+
+  if (estado === STATE_TUTORIAL) {
+    event.preventDefault()
+    lidarTeclaTutorial(event)
     return
   }
 
