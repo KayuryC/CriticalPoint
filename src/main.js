@@ -26,6 +26,7 @@ const LIMITE_BALAS_PLAYER = 120
 const LIMITE_BALAS_INIMIGAS = 260
 const LIMITE_PARTICULAS = 280
 const LIMITE_ONDAS = 24
+const WAVE_BOSS_FINAL = 8
 
 const QUESTOES = {
   1: {
@@ -62,7 +63,7 @@ const QUESTOES = {
     ]
   },
   4: {
-    titulo: 'Wave 4 - Maximos, minimos e Hessiana',
+    titulo: 'Wave 4 - Pontos criticos',
     texto: 'Classifique o ponto critico de f(x,y) = x^2 - y^2 no ponto (0,0)',
     dica: 'A curvatura muda de sinal entre x e y.',
     alternativas: [
@@ -70,6 +71,50 @@ const QUESTOES = {
       { texto: 'Maximo local', correta: false },
       { texto: 'Ponto regular', correta: false },
       { texto: 'Ponto de sela', correta: true }
+    ]
+  },
+  5: {
+    titulo: 'Wave 5 - Derivada parcial em y',
+    texto: 'Calcule df/dy de f(x,y) = x^2y + 3y^2',
+    dica: 'Trate x como constante e derive somente em relacao a y.',
+    alternativas: [
+      { texto: '2xy + 6y', correta: false },
+      { texto: 'x^2 + 6y', correta: true },
+      { texto: 'x^2 + 3y', correta: false },
+      { texto: '2x + 6y', correta: false }
+    ]
+  },
+  6: {
+    titulo: 'Wave 6 - Derivada direcional',
+    texto: 'Para f(x,y) = x^2 + y^2 no ponto (3,4), calcule a derivada direcional na direcao u = (3/5, 4/5).',
+    dica: 'Use grad f(3,4) = (6,8) e faca o produto escalar com u.',
+    alternativas: [
+      { texto: '5', correta: false },
+      { texto: '8', correta: false },
+      { texto: '10', correta: true },
+      { texto: '14', correta: false }
+    ]
+  },
+  7: {
+    titulo: 'Wave 7 - Teste da Hessiana',
+    texto: 'Use o teste da Hessiana para classificar o ponto (0,0) de f(x,y) = x^2 + y^2.',
+    dica: 'D = fxx*fyy - (fxy)^2. Se D > 0 e fxx > 0, ha minimo local.',
+    alternativas: [
+      { texto: 'Maximo local', correta: false },
+      { texto: 'Ponto de sela', correta: false },
+      { texto: 'Minimo local', correta: true },
+      { texto: 'Teste inconclusivo', correta: false }
+    ]
+  },
+  8: {
+    titulo: 'Wave 8 - Boss: ponto critico final',
+    texto: 'Qual e o ponto critico de f(x,y) = x^2 + 4y^2 - 4x - 8y?',
+    dica: 'Resolva f_x = 0 e f_y = 0.',
+    alternativas: [
+      { texto: '(0, 0)', correta: false },
+      { texto: '(2, 1)', correta: true },
+      { texto: '(1, 2)', correta: false },
+      { texto: '(4, 8)', correta: false }
     ]
   }
 }
@@ -421,9 +466,47 @@ function centralizarPlayer() {
   player.y = canvas.height / 2
 }
 
+function iniciarMusicaFundo() {
+  if (!window.CriticalPointMusic) {
+    return
+  }
+
+  window.CriticalPointMusic.start()
+  atualizarMusicaEstado()
+}
+
+function atualizarMusicaEstado() {
+  if (!window.CriticalPointMusic) {
+    return
+  }
+
+  if (estado === STATE_PLAYING) {
+    window.CriticalPointMusic.setMode('battle')
+    return
+  }
+
+  if (estado === STATE_QUESTION || estado === STATE_SHOP || estado === STATE_TUTORIAL) {
+    window.CriticalPointMusic.setMode('focus')
+    return
+  }
+
+  if (estado === STATE_CUTSCENE || estado === STATE_COMPUTADOR) {
+    window.CriticalPointMusic.setMode('danger')
+    return
+  }
+
+  if (estado === STATE_GAMEOVER) {
+    window.CriticalPointMusic.setMode('gameover')
+    return
+  }
+
+  window.CriticalPointMusic.setMode('intro')
+}
+
 function trocarEstado(novoEstado) {
   estado = novoEstado
   estadoIniciadoEm = performance.now()
+  atualizarMusicaEstado()
 
   if (novoEstado === STATE_CAMINHO) {
     prepararCenaCaminho()
@@ -569,9 +652,9 @@ function iniciarWave(numeroWave) {
   desempenho.detalhe = 2
   desempenho.proximaAvaliacao = 0
 
-  if (wave === 4) {
+  if (wave === WAVE_BOSS_FINAL) {
     bossPerguntaResolvida = false
-    abrirQuestao(4, true)
+    abrirQuestao(WAVE_BOSS_FINAL, true)
     return
   }
 
@@ -611,30 +694,66 @@ function atualizarComputador(agora) {
 }
 
 function abrirQuestao(numeroWave, boss) {
+  const dadosQuestao = QUESTOES[numeroWave]
+
   questaoAtual = {
     wave: numeroWave,
     boss: !!boss,
-    titulo: QUESTOES[numeroWave].titulo,
-    texto: QUESTOES[numeroWave].texto,
-    dica: QUESTOES[numeroWave].dica,
-    alternativas: QUESTOES[numeroWave].alternativas
+    titulo: dadosQuestao.titulo,
+    texto: dadosQuestao.texto,
+    dica: dadosQuestao.dica,
+    alternativas: dadosQuestao.alternativas,
+    respondida: false,
+    acertou: null,
+    respostaMarcada: null,
+    respostaCorreta: encontrarRespostaCorreta(dadosQuestao.alternativas)
   }
   alternativaSelecionada = null
   questaoBotoes = []
   trocarEstado(STATE_QUESTION)
 }
 
+function encontrarRespostaCorreta(alternativas) {
+  for (let i = 0; i < alternativas.length; i++) {
+    if (alternativas[i].correta) {
+      return i
+    }
+  }
+
+  return -1
+}
+
 function avaliarResposta() {
-  if (alternativaSelecionada === null || !questaoAtual.alternativas[alternativaSelecionada]) {
+  if (
+    !questaoAtual ||
+    questaoAtual.respondida ||
+    alternativaSelecionada === null ||
+    !questaoAtual.alternativas[alternativaSelecionada]
+  ) {
     return
   }
 
   const correta = questaoAtual.alternativas[alternativaSelecionada].correta
+  questaoAtual.respondida = true
+  questaoAtual.acertou = correta
+  questaoAtual.respostaMarcada = alternativaSelecionada
 
   if (correta) {
     score += 50
     pontos += 50
+    agitarTela(4, 220, '#00ff88')
+    return
+  }
 
+  agitarTela(10, 320, '#ff2020')
+}
+
+function finalizarQuestao() {
+  if (!questaoAtual || !questaoAtual.respondida) {
+    return
+  }
+
+  if (questaoAtual.acertou) {
     if (questaoAtual.boss) {
       bossPerguntaResolvida = true
       liberarBoss()
@@ -860,12 +979,12 @@ function atualizarJogo(agora) {
     return
   }
 
-  if (wave === 4 && !bossPerguntaResolvida && agora > proximaPerguntaBoss && !existePunitivo()) {
-    abrirQuestao(4, true)
+  if (wave === WAVE_BOSS_FINAL && !bossPerguntaResolvida && agora > proximaPerguntaBoss && !existePunitivo()) {
+    abrirQuestao(WAVE_BOSS_FINAL, true)
     return
   }
 
-  if (wave < 4 && !aguardandoPunitivo && contarInimigosDeCombate() === 0) {
+  if (wave < WAVE_BOSS_FINAL && !aguardandoPunitivo && contarInimigosDeCombate() === 0) {
     abrirQuestao(wave, false)
     return
   }
@@ -2080,6 +2199,11 @@ function lidarClique() {
   }
 
   if (estado === STATE_QUESTION) {
+    if (questaoAtual && questaoAtual.respondida) {
+      finalizarQuestao()
+      return
+    }
+
     for (let i = 0; i < questaoBotoes.length; i++) {
       const botao = questaoBotoes[i]
       if (mouseSobre(botao.rect)) {
@@ -2107,6 +2231,18 @@ function lidarClique() {
 }
 
 function lidarTeclaQuestao(event) {
+  if (!questaoAtual) {
+    return
+  }
+
+  if (questaoAtual.respondida) {
+    if (event.key === 'Enter' || event.code === 'Space') {
+      finalizarQuestao()
+    }
+
+    return
+  }
+
   const numero = Number(event.key)
 
   if (numero >= 1 && numero <= 4 && questaoAtual.alternativas[numero - 1]) {
@@ -2186,6 +2322,8 @@ window.addEventListener('mousedown', function(event) {
     return
   }
 
+  iniciarMusicaFundo()
+
   const estadoAntesClique = estado
   mouse.down = estadoAntesClique === STATE_PLAYING
   lidarClique()
@@ -2203,6 +2341,15 @@ window.addEventListener('mouseup', function(event) {
 
 window.addEventListener('keydown', function(event) {
   keys[event.code] = true
+
+  if (event.code === 'KeyM' && window.CriticalPointMusic) {
+    event.preventDefault()
+    window.CriticalPointMusic.toggleMute()
+    iniciarMusicaFundo()
+    return
+  }
+
+  iniciarMusicaFundo()
 
   if (transicao.ativa) {
     return

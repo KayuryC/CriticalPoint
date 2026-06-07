@@ -433,6 +433,46 @@ function spawnWave(canvas, wave) {
   }
 
   if (wave === 4) {
+    for (let i = 0; i < 8; i++) {
+      inimigos.push(criarInimigo(canvas, 'normal', wave))
+    }
+
+    for (let i = 0; i < 4; i++) {
+      inimigos.push(criarInimigo(canvas, 'laranja', wave))
+    }
+  }
+
+  if (wave === 5) {
+    for (let i = 0; i < 6; i++) {
+      inimigos.push(criarInimigo(canvas, 'gradiente', wave))
+    }
+
+    for (let i = 0; i < 4; i++) {
+      inimigos.push(criarInimigo(canvas, 'laranja', wave))
+    }
+  }
+
+  if (wave === 6) {
+    for (let i = 0; i < 6; i++) {
+      inimigos.push(criarInimigo(canvas, 'normal', wave))
+    }
+
+    for (let i = 0; i < 8; i++) {
+      inimigos.push(criarInimigo(canvas, 'gradiente', wave))
+    }
+  }
+
+  if (wave === 7) {
+    for (let i = 0; i < 8; i++) {
+      inimigos.push(criarInimigo(canvas, 'gradiente', wave))
+    }
+
+    for (let i = 0; i < 5; i++) {
+      inimigos.push(criarInimigo(canvas, 'laranja', wave))
+    }
+  }
+
+  if (wave === 8) {
     inimigos.push(criarInimigo(canvas, 'boss', wave))
   }
 

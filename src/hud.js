@@ -136,8 +136,10 @@ function desenharShop(ctx, canvas, pontos, itens) {
 
 function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   const botoes = []
-  const painelW = Math.min(860, canvas.width - 34)
-  const painelH = Math.min(560, canvas.height - 34)
+  const respondida = !!questao.respondida
+  const compacto = canvas.height < 620
+  const painelW = Math.min(900, canvas.width - 34)
+  const painelH = Math.min(respondida ? 640 : 560, canvas.height - 34)
   const painelX = canvas.width / 2 - painelW / 2
   const painelY = canvas.height / 2 - painelH / 2
   const alternativas = questao.alternativas || []
@@ -145,10 +147,15 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   const linhas = Math.ceil(alternativas.length / colunas)
   const margemX = 34
   const gap = 16
-  const alternativasY = painelY + Math.min(230, painelH * 0.44)
-  const rodapeH = 56
+  const alternativasY = painelY + (respondida ? Math.min(compacto ? 170 : 210, painelH * 0.34) : Math.min(230, painelH * 0.44))
+  const rodapeH = respondida ? (compacto ? 96 : 126) : 56
   const alternativaW = colunas === 1 ? painelW - margemX * 2 : (painelW - margemX * 2 - gap) / 2
-  const alternativaH = Math.max(54, Math.min(82, (painelY + painelH - rodapeH - alternativasY - gap * (linhas - 1)) / linhas))
+  const alternativaH = Math.max(
+    compacto ? 40 : 54,
+    Math.min(82, (painelY + painelH - rodapeH - alternativasY - gap * (linhas - 1)) / linhas)
+  )
+  const respostaCorreta = questao.respostaCorreta
+  const respostaMarcada = respondida ? questao.respostaMarcada : alternativaSelecionada
 
   ctx.save()
   ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
@@ -167,13 +174,13 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   ctx.fillText(questao.titulo, canvas.width / 2, painelY + 42)
 
   ctx.textAlign = 'left'
-  ctx.font = '18px Courier New'
+  ctx.font = compacto ? '16px Courier New' : '18px Courier New'
   ctx.fillStyle = '#d6ffe2'
-  quebrarTextoHUD(ctx, questao.texto, painelX + 34, painelY + 92, painelW - 68, 26)
+  quebrarTextoHUD(ctx, questao.texto, painelX + 34, painelY + 88, painelW - 68, compacto ? 22 : 26)
 
   ctx.fillStyle = '#8affaa'
-  ctx.font = '14px Courier New'
-  quebrarTextoHUD(ctx, 'Dica: ' + questao.dica, painelX + 34, painelY + 166, painelW - 68, 22)
+  ctx.font = compacto ? '13px Courier New' : '14px Courier New'
+  quebrarTextoHUD(ctx, 'Dica: ' + questao.dica, painelX + 34, painelY + (compacto ? 148 : 166), painelW - 68, compacto ? 19 : 22)
 
   for (let i = 0; i < alternativas.length; i++) {
     const alternativa = alternativas[i]
@@ -181,20 +188,45 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
     const linha = Math.floor(i / colunas)
     const x = painelX + margemX + coluna * (alternativaW + gap)
     const y = alternativasY + linha * (alternativaH + gap)
-    const selecionada = alternativaSelecionada === i
+    const selecionada = respostaMarcada === i
     const letra = String.fromCharCode(65 + i)
+    let preenchimento = selecionada ? 'rgba(0, 255, 65, 0.26)' : 'rgba(0, 0, 0, 0.72)'
+    let borda = selecionada ? '#ffffff' : '#00ff41'
+    let texto = selecionada ? '#ffffff' : '#d6ffe2'
+    let larguraBorda = selecionada ? 3 : 1
 
-    ctx.fillStyle = selecionada ? 'rgba(0, 255, 65, 0.26)' : 'rgba(0, 0, 0, 0.72)'
-    ctx.strokeStyle = selecionada ? '#ffffff' : '#00ff41'
-    ctx.lineWidth = selecionada ? 3 : 1
+    if (respondida) {
+      preenchimento = 'rgba(0, 0, 0, 0.66)'
+      borda = '#145c31'
+      texto = '#9dbaa6'
+      larguraBorda = 1
+
+      if (i === respostaCorreta) {
+        preenchimento = 'rgba(0, 255, 105, 0.24)'
+        borda = '#00ff88'
+        texto = '#eafff1'
+        larguraBorda = 3
+      }
+
+      if (i === respostaMarcada && i !== respostaCorreta) {
+        preenchimento = 'rgba(255, 32, 32, 0.28)'
+        borda = '#ff4545'
+        texto = '#ffe3e3'
+        larguraBorda = 3
+      }
+    }
+
+    ctx.fillStyle = preenchimento
+    ctx.strokeStyle = borda
+    ctx.lineWidth = larguraBorda
     ctx.fillRect(x, y, alternativaW, alternativaH)
     ctx.strokeRect(x, y, alternativaW, alternativaH)
 
     ctx.textAlign = 'left'
-    ctx.fillStyle = selecionada ? '#ffffff' : '#d6ffe2'
-    ctx.font = '18px Courier New'
-    ctx.fillText(letra + ')', x + 18, y + 19)
-    quebrarTextoHUD(ctx, alternativa.texto, x + 58, y + 19, alternativaW - 76, 22)
+    ctx.fillStyle = texto
+    ctx.font = compacto ? '15px Courier New' : '18px Courier New'
+    ctx.fillText(letra + ')', x + 18, y + (compacto ? 17 : 19))
+    quebrarTextoHUD(ctx, alternativa.texto, x + 58, y + (compacto ? 17 : 19), alternativaW - 76, compacto ? 19 : 22)
 
     botoes.push({
       indice: i,
@@ -203,11 +235,51 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   }
 
   ctx.textAlign = 'center'
-  ctx.fillStyle = '#00ff41'
-  ctx.font = '15px Courier New'
-  ctx.fillText('Escolha uma alternativa', canvas.width / 2, painelY + painelH - 38)
+
+  if (respondida) {
+    const feedbackY = painelY + painelH - (compacto ? 82 : 106)
+    const correta = questao.acertou
+    const marcadaTexto = respostaMarcada >= 0 && alternativas[respostaMarcada]
+      ? obterLetraAlternativaHUD(respostaMarcada) + ') ' + alternativas[respostaMarcada].texto
+      : ''
+    const corretaTexto = respostaCorreta >= 0 && alternativas[respostaCorreta]
+      ? obterLetraAlternativaHUD(respostaCorreta) + ') ' + alternativas[respostaCorreta].texto
+      : ''
+
+    ctx.fillStyle = correta ? 'rgba(0, 255, 105, 0.1)' : 'rgba(255, 32, 32, 0.1)'
+    ctx.strokeStyle = correta ? '#00ff88' : '#ff4545'
+    ctx.lineWidth = 2
+    ctx.fillRect(painelX + 34, feedbackY, painelW - 68, compacto ? 66 : 88)
+    ctx.strokeRect(painelX + 34, feedbackY, painelW - 68, compacto ? 66 : 88)
+
+    ctx.fillStyle = correta ? '#00ff88' : '#ff4545'
+    ctx.font = compacto ? '17px Courier New' : '20px Courier New'
+    ctx.fillText(correta ? 'VOCE ACERTOU' : 'VOCE ERROU', canvas.width / 2, feedbackY + (compacto ? 22 : 26))
+
+    ctx.font = compacto ? '13px Courier New' : '15px Courier New'
+    ctx.fillStyle = '#baffca'
+    ctx.fillText('Correta: ' + corretaTexto, canvas.width / 2, feedbackY + (compacto ? 43 : 52))
+
+    if (!correta && !compacto) {
+      ctx.fillStyle = '#ffb2b2'
+      ctx.fillText('Marcada: ' + marcadaTexto, canvas.width / 2, feedbackY + 72)
+    }
+
+    ctx.fillStyle = '#d6ffe2'
+    ctx.font = '13px Courier New'
+    ctx.fillText('Clique ou pressione Enter para continuar', canvas.width / 2, painelY + painelH - 18)
+  } else {
+    ctx.fillStyle = '#00ff41'
+    ctx.font = '15px Courier New'
+    ctx.fillText('Escolha uma alternativa', canvas.width / 2, painelY + painelH - 38)
+  }
+
   ctx.restore()
   return botoes
+}
+
+function obterLetraAlternativaHUD(indice) {
+  return String.fromCharCode(65 + indice)
 }
 
 function quebrarTextoHUD(ctx, texto, x, y, largura, alturaLinha) {
