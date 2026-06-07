@@ -14,6 +14,7 @@ const STATE_PLAYING = 'playing'
 const STATE_QUESTION = 'question'
 const STATE_SHOP = 'shop'
 const STATE_GAMEOVER = 'gameover'
+const STATE_VICTORY = 'victory'
 
 const keys = {}
 const mouse = {
@@ -26,7 +27,8 @@ const LIMITE_BALAS_PLAYER = 120
 const LIMITE_BALAS_INIMIGAS = 260
 const LIMITE_PARTICULAS = 280
 const LIMITE_ONDAS = 24
-const WAVE_BOSS_FINAL = 8
+const WAVE_BOSS_FINAL = 100
+const TIPOS_INIMIGO_ERRO = ['atirador', 'rapido', 'explosivo', 'sniper', 'regenerador']
 
 const QUESTOES = {
   1: {
@@ -107,7 +109,7 @@ const QUESTOES = {
     ]
   },
   8: {
-    titulo: 'Wave 8 - Boss: ponto critico final',
+    titulo: 'Wave 8 - Ponto critico completo',
     texto: 'Qual e o ponto critico de f(x,y) = x^2 + 4y^2 - 4x - 8y?',
     dica: 'Resolva f_x = 0 e f_y = 0.',
     alternativas: [
@@ -119,11 +121,134 @@ const QUESTOES = {
   }
 }
 
+function obterDadosQuestao(numeroWave, boss) {
+  if (boss) {
+    return gerarQuestaoBossFinal(numeroWave)
+  }
+
+  if (QUESTOES[numeroWave]) {
+    return QUESTOES[numeroWave]
+  }
+
+  return gerarQuestaoDinamica(numeroWave)
+}
+
+function gerarQuestaoBossFinal(numeroWave) {
+  return {
+    titulo: 'Wave ' + numeroWave + ' - Boss final: ponto critico',
+    texto: 'Qual e o ponto critico de f(x,y) = x^2 + 4y^2 - 10x - 24y?',
+    dica: 'Resolva f_x = 0 e f_y = 0. Aqui, f_x = 2x - 10 e f_y = 8y - 24.',
+    alternativas: criarAlternativas('(5, 3)', ['(3, 5)', '(10, 24)', '(0, 0)'], numeroWave)
+  }
+}
+
+function gerarQuestaoDinamica(numeroWave) {
+  const tipo = numeroWave % 6
+  const a = numeroWave % 5 + 1
+  const b = numeroWave % 4 + 2
+  const c = numeroWave % 3 + 1
+  const x = numeroWave % 6 + 1
+  const y = numeroWave % 5 + 2
+
+  if (tipo === 0) {
+    const correta = a * x * x + b * y
+    return {
+      titulo: 'Wave ' + numeroWave + ' - Valor de f(x,y)',
+      texto: 'Calcule f(' + x + ',' + y + ') para f(x,y) = ' + a + 'x^2 + ' + b + 'y.',
+      dica: 'Substitua x e y antes de fazer as contas.',
+      alternativas: criarAlternativas(String(correta), [String(correta + a), String(correta - b), String(x * x + b * y)], numeroWave)
+    }
+  }
+
+  if (tipo === 1) {
+    const correta = (2 * a) + 'x + ' + b + 'y'
+    return {
+      titulo: 'Wave ' + numeroWave + ' - Derivada parcial em x',
+      texto: 'Calcule df/dx de f(x,y) = ' + a + 'x^2 + ' + b + 'xy + ' + c + 'y^2.',
+      dica: 'Ao derivar em x, trate y como constante.',
+      alternativas: criarAlternativas(correta, [a + 'x + ' + b + 'y', (2 * a) + 'x + ' + b + 'x', (2 * a) + 'x + ' + c + 'y^2'], numeroWave)
+    }
+  }
+
+  if (tipo === 2) {
+    const correta = b + 'x + ' + (2 * c) + 'y'
+    return {
+      titulo: 'Wave ' + numeroWave + ' - Derivada parcial em y',
+      texto: 'Calcule df/dy de f(x,y) = ' + a + 'x^2 + ' + b + 'xy + ' + c + 'y^2.',
+      dica: 'Ao derivar em y, trate x como constante.',
+      alternativas: criarAlternativas(correta, [b + 'y + ' + (2 * c) + 'x', a + 'x + ' + (2 * c) + 'y', b + 'x + ' + c + 'y'], numeroWave)
+    }
+  }
+
+  if (tipo === 3) {
+    const correta = '(' + (2 * x) + ', ' + (2 * y) + ')'
+    return {
+      titulo: 'Wave ' + numeroWave + ' - Vetor gradiente',
+      texto: 'Qual e o gradiente de f(x,y) = x^2 + y^2 no ponto (' + x + ',' + y + ')?',
+      dica: 'O gradiente e o vetor (df/dx, df/dy).',
+      alternativas: criarAlternativas(correta, ['(' + x + ', ' + y + ')', '(' + (2 * y) + ', ' + (2 * x) + ')', '(' + (x * x) + ', ' + (y * y) + ')'], numeroWave)
+    }
+  }
+
+  if (tipo === 4) {
+    const sela = numeroWave % 2 === 1
+    return {
+      titulo: 'Wave ' + numeroWave + ' - Hessiana',
+      texto: 'Classifique o ponto (0,0) de f(x,y) = ' + (sela ? 'x^2 - y^2.' : 'x^2 + y^2.'),
+      dica: sela ? 'A curvatura muda de sinal entre x e y.' : 'A Hessiana tem curvatura positiva nas duas direcoes.',
+      alternativas: criarAlternativas(sela ? 'Ponto de sela' : 'Minimo local', ['Maximo local', sela ? 'Minimo local' : 'Ponto de sela', 'Teste inconclusivo'], numeroWave)
+    }
+  }
+
+  const px = a + 1
+  const py = b
+  return {
+    titulo: 'Wave ' + numeroWave + ' - Ponto critico',
+    texto: 'Encontre o ponto critico de f(x,y) = x^2 + y^2 - ' + (2 * px) + 'x - ' + (2 * py) + 'y.',
+    dica: 'Resolva f_x = 0 e f_y = 0.',
+    alternativas: criarAlternativas('(' + px + ', ' + py + ')', ['(' + py + ', ' + px + ')', '(' + (2 * px) + ', ' + (2 * py) + ')', '(0, 0)'], numeroWave)
+  }
+}
+
+function criarAlternativas(correta, distratores, numeroWave) {
+  const erradas = []
+
+  for (let i = 0; i < distratores.length; i++) {
+    const texto = String(distratores[i])
+    if (texto !== correta && erradas.indexOf(texto) === -1) {
+      erradas.push(texto)
+    }
+  }
+
+  while (erradas.length < 3) {
+    erradas.push(correta + ' ')
+  }
+
+  const posicaoCorreta = numeroWave % 4
+  const textos = erradas.slice(0, 3)
+  textos.splice(posicaoCorreta, 0, correta)
+
+  return textos.slice(0, 4).map(function(texto, indice) {
+    return {
+      texto: texto,
+      correta: indice === posicaoCorreta
+    }
+  })
+}
+
 const SHOP_ITENS = [
-  { id: 'shield', nome: 'SHIELD+', detalhe: '+2 HP maximo', custo: 50 },
-  { id: 'firepower', nome: 'FIREPOWER+', detalhe: '+1 dano', custo: 75 },
-  { id: 'speed', nome: 'SPEED+', detalhe: '+ velocidade', custo: 60 },
+  { id: 'shield', nome: 'SHIELD+', detalhe: '+100 shield maximo', custo: 50 },
+  { id: 'firepower', nome: 'FIREPOWER+', detalhe: '+1 dano / max 5', custo: 75 },
+  { id: 'speed', nome: 'SPEED+', detalhe: '+ velocidade / max 6.4', custo: 60 },
   { id: 'cooldown', nome: 'COOLDOWN-', detalhe: 'tiros mais rapidos', custo: 80 }
+]
+
+const ARMAS_DISPONIVEIS = [
+  { id: 'padrao', nome: 'PADRAO', detalhe: 'tiro unico equilibrado' },
+  { id: 'tripla', nome: 'TRIPLA', detalhe: '3 tiros por disparo' },
+  { id: 'explosiva', nome: 'EXPLOSIVA', detalhe: 'area / cooldown 1.5s' },
+  { id: 'precisao', nome: 'PRECISAO', detalhe: 'dano alto e longo alcance' },
+  { id: 'pulso', nome: 'PULSO', detalhe: 'cone curto de 5 tiros' }
 ]
 
 const DIALOGOS_FACULDADE = [
@@ -419,6 +544,8 @@ let bossPerguntaResolvida = false
 let proximaPerguntaBoss = 0
 let gameoverTitulo = 'FIM DA CONEXAO'
 let gameoverTexto = 'Zion foi desconectado da Matrix.'
+let vitoriaTitulo = 'CRITICALPOINT ZERADO'
+let vitoriaTexto = 'Zion atravessou as 100 waves e dominou os pontos criticos.'
 let efeitos = {
   glitchAte: 0,
   shakeAte: 0,
@@ -495,7 +622,7 @@ function atualizarMusicaEstado() {
     return
   }
 
-  if (estado === STATE_GAMEOVER) {
+  if (estado === STATE_GAMEOVER || estado === STATE_VICTORY) {
     window.CriticalPointMusic.setMode('gameover')
     return
   }
@@ -694,7 +821,7 @@ function atualizarComputador(agora) {
 }
 
 function abrirQuestao(numeroWave, boss) {
-  const dadosQuestao = QUESTOES[numeroWave]
+  const dadosQuestao = obterDadosQuestao(numeroWave, boss)
 
   questaoAtual = {
     wave: numeroWave,
@@ -767,14 +894,14 @@ function finalizarQuestao() {
 
   if (questaoAtual.boss) {
     curarBossPorErro()
-    spawnarPunitivo()
-    proximaPerguntaBoss = performance.now() + 6500
+    spawnarAmeacaErro()
+    proximaPerguntaBoss = performance.now() + 8500
     trocarEstado(STATE_PLAYING)
     return
   }
 
   aguardandoPunitivo = true
-  spawnarPunitivo()
+  spawnarAmeacaErro()
   trocarEstado(STATE_PLAYING)
 }
 
@@ -795,9 +922,29 @@ function curarBossPorErro() {
   }
 }
 
-function spawnarPunitivo() {
-  inimigos.push(criarInimigo(canvas, 'punitivo', wave))
-  efeitos.glitchAte = performance.now() + 900
+function spawnarAmeacaErro() {
+  const tipoEspecial = escolherTipoInimigoErro()
+  const especial = criarInimigo(canvas, tipoEspecial, wave)
+  const bossErro = criarInimigo(canvas, 'bossErro', wave)
+
+  especial.erroQuestao = true
+  bossErro.erroQuestao = true
+  aplicarProtecaoInimigo(bossErro, 8000)
+
+  if (wave >= 10) {
+    aplicarProtecaoInimigo(especial, 5000)
+  }
+
+  inimigos.push(especial)
+  inimigos.push(bossErro)
+  efeitos.glitchAte = performance.now() + 1100
+  agitarTela(14, 420, '#ff005d')
+}
+
+function escolherTipoInimigoErro() {
+  const marcada = questaoAtual && questaoAtual.respostaMarcada !== null ? questaoAtual.respostaMarcada : 0
+  const indice = Math.abs((wave + marcada) % TIPOS_INIMIGO_ERRO.length)
+  return TIPOS_INIMIGO_ERRO[indice]
 }
 
 function comprarUpgrade(item) {
@@ -806,8 +953,63 @@ function comprarUpgrade(item) {
     return
   }
 
+  if (item.id === 'shield' && player.escudoMaximo >= 100 && player.escudo >= 100) {
+    efeitos.glitchAte = performance.now() + 260
+    return
+  }
+
+  if (item.id === 'firepower' && player.dano >= player.danoMaximo) {
+    efeitos.glitchAte = performance.now() + 260
+    return
+  }
+
+  if (item.id === 'speed' && player.velocidade >= player.velocidadeMaxima) {
+    efeitos.glitchAte = performance.now() + 260
+    return
+  }
+
+  const aplicado = aplicarUpgradePlayer(player, item.id)
+  if (!aplicado) {
+    efeitos.glitchAte = performance.now() + 260
+    return
+  }
+
   pontos -= item.custo
-  aplicarUpgradePlayer(player, item.id)
+}
+
+function trocarArma(arma) {
+  player.arma = arma.id
+  player.armaNome = arma.nome
+  efeitos.glitchAte = performance.now() + 320
+  agitarTela(3, 160, '#00ff88')
+}
+
+function obterArmasDisponiveisShop() {
+  if (wave > 0 && wave % 5 === 0 && wave < WAVE_BOSS_FINAL) {
+    return ARMAS_DISPONIVEIS
+  }
+
+  return []
+}
+
+function obterCooldownArma() {
+  if (player.arma === 'explosiva') {
+    return 1500
+  }
+
+  if (player.arma === 'tripla') {
+    return Math.max(170, player.cooldown + 45)
+  }
+
+  if (player.arma === 'precisao') {
+    return Math.max(240, player.cooldown + 100)
+  }
+
+  if (player.arma === 'pulso') {
+    return Math.max(330, player.cooldown + 180)
+  }
+
+  return player.cooldown
 }
 
 function atirar(agora) {
@@ -815,7 +1017,7 @@ function atirar(agora) {
     return
   }
 
-  if (agora - player.ultimoTiro < player.cooldown) {
+  if (agora - player.ultimoTiro < obterCooldownArma()) {
     return
   }
 
@@ -823,13 +1025,17 @@ function atirar(agora) {
     return
   }
 
-  const bala = criarBala(player)
-  balas.push(bala)
+  const novasBalas = criarBalasPlayer(player)
+  const vagas = LIMITE_BALAS_PLAYER - balas.length
+  for (let i = 0; i < Math.min(vagas, novasBalas.length); i++) {
+    balas.push(novasBalas[i])
+  }
   const bocaX = player.x + Math.cos(player.angulo) * 42
   const bocaY = player.y + Math.sin(player.angulo) * 42
-  emitirParticulas(bocaX, bocaY, '#b7ffd0', desempenho.detalhe === 0 ? 1 : 3)
-  adicionarOndaImpacto(bocaX, bocaY, '#00ff41', 24)
-  agitarTela(1.4, 70)
+  const corTiro = player.arma === 'explosiva' ? '#ffb000' : '#b7ffd0'
+  emitirParticulas(bocaX, bocaY, corTiro, player.arma === 'pulso' ? 5 : (desempenho.detalhe === 0 ? 1 : 3))
+  adicionarOndaImpacto(bocaX, bocaY, corTiro, player.arma === 'explosiva' ? 42 : 24)
+  agitarTela(player.arma === 'explosiva' ? 4.2 : 1.4, player.arma === 'explosiva' ? 120 : 70)
   player.ultimoTiro = agora
 }
 
@@ -853,6 +1059,32 @@ function adicionarOndaImpacto(x, y, cor, tamanho) {
     ondasImpacto.shift()
   }
   ondasImpacto.push(criarOndaImpacto(x, y, cor, tamanho))
+}
+
+function processarExplosaoInimigo(explosao) {
+  emitirParticulas(explosao.x, explosao.y, explosao.cor, 52)
+  adicionarOndaImpacto(explosao.x, explosao.y, explosao.cor, explosao.tamanho || 126)
+  agitarTela(explosao.acertouPlayer ? 16 : 11, explosao.acertouPlayer ? 460 : 310, explosao.cor)
+
+  if (explosao.acertouPlayer) {
+    emitirParticulas(player.x, player.y, '#ff2020', 14)
+    adicionarOndaImpacto(player.x, player.y, '#ff2020', 74)
+  }
+}
+
+function detonarExplosivoMorto(morto, agora) {
+  const tamanho = morto.raioExplosao || 126
+  const dx = player.x - morto.x
+  const dy = player.y - morto.y
+  const acertouPlayer = dx * dx + dy * dy < tamanho * tamanho && receberDanoPlayer(player, 28, agora)
+
+  processarExplosaoInimigo({
+    x: morto.x,
+    y: morto.y,
+    cor: morto.cor,
+    tamanho: tamanho,
+    acertouPlayer: acertouPlayer
+  })
 }
 
 function atualizarNivelDetalhe(delta, agora) {
@@ -918,8 +1150,13 @@ function atualizarJogo(agora) {
   removerBalas(balasInimigas, canvas)
   moverInimigos(inimigos, player)
 
+  const explosoes = verificarExplosoesInimigos(inimigos, player, agora)
+  for (let i = 0; i < explosoes.length; i++) {
+    processarExplosaoInimigo(explosoes[i])
+  }
+
   const vagasBalasInimigas = LIMITE_BALAS_INIMIGAS - balasInimigas.length
-  const novasBalas = gerarDisparosInimigos(inimigos, agora, vagasBalasInimigas)
+  const novasBalas = gerarDisparosInimigos(inimigos, agora, vagasBalasInimigas, player)
   for (let i = 0; i < novasBalas.length; i++) {
     balasInimigas.push(novasBalas[i])
   }
@@ -934,13 +1171,33 @@ function atualizarJogo(agora) {
     agitarTela(impacto.bloqueado ? 2 : 3, 95)
   }
 
+  for (let i = 0; i < resultadoColisao.explosoes.length; i++) {
+    processarExplosaoInimigo({
+      x: resultadoColisao.explosoes[i].x,
+      y: resultadoColisao.explosoes[i].y,
+      cor: resultadoColisao.explosoes[i].cor,
+      tamanho: resultadoColisao.explosoes[i].tamanho,
+      acertouPlayer: false
+    })
+  }
+
   for (let i = 0; i < resultadoColisao.mortos.length; i++) {
     const morto = resultadoColisao.mortos[i]
+    const inimigoGrande = morto.tipo === 'boss' || morto.tipo === 'bossErro'
+
     score += morto.pontos
     pontos += morto.pontos
-    emitirParticulas(morto.x, morto.y, morto.cor, morto.tipo === 'boss' ? 70 : 22)
-    adicionarOndaImpacto(morto.x, morto.y, morto.cor, morto.tipo === 'boss' ? 180 : 92)
-    agitarTela(morto.tipo === 'boss' ? 18 : 7, morto.tipo === 'boss' ? 650 : 220, morto.cor)
+    emitirParticulas(morto.x, morto.y, morto.cor, inimigoGrande ? 70 : 22)
+    adicionarOndaImpacto(morto.x, morto.y, morto.cor, inimigoGrande ? 180 : 92)
+    agitarTela(inimigoGrande ? 18 : 7, inimigoGrande ? 650 : 220, morto.cor)
+
+    if (morto.tipo === 'explosivo') {
+      detonarExplosivoMorto(morto, agora)
+    }
+
+    if (morto.tipo === 'carrier' && morto.filhosAoMorrer > 0) {
+      liberarFilhosCarrier(morto)
+    }
 
     if (morto.tipo === 'boss') {
       vencerJogo()
@@ -967,6 +1224,11 @@ function atualizarJogo(agora) {
       pontos += 30
       emitirParticulas(expirados[i].x, expirados[i].y, '#8b0000', 36)
     }
+
+    if (expirados[i].erroQuestao || expirados[i].tipo === 'bossErro') {
+      emitirParticulas(expirados[i].x, expirados[i].y, expirados[i].cor, 30)
+      adicionarOndaImpacto(expirados[i].x, expirados[i].y, expirados[i].cor, 110)
+    }
   }
 
   atualizarParticulas(particulas)
@@ -979,7 +1241,7 @@ function atualizarJogo(agora) {
     return
   }
 
-  if (wave === WAVE_BOSS_FINAL && !bossPerguntaResolvida && agora > proximaPerguntaBoss && !existePunitivo()) {
+  if (wave === WAVE_BOSS_FINAL && !bossPerguntaResolvida && agora > proximaPerguntaBoss && !existeAmeacaErro()) {
     abrirQuestao(WAVE_BOSS_FINAL, true)
     return
   }
@@ -989,7 +1251,7 @@ function atualizarJogo(agora) {
     return
   }
 
-  if (aguardandoPunitivo && !existePunitivo()) {
+  if (aguardandoPunitivo && !existeAmeacaErro()) {
     aguardandoPunitivo = false
     trocarEstado(STATE_SHOP)
   }
@@ -1007,9 +1269,9 @@ function contarInimigosDeCombate() {
   return total
 }
 
-function existePunitivo() {
+function existeAmeacaErro() {
   for (let i = 0; i < inimigos.length; i++) {
-    if (inimigos[i].tipo === 'punitivo') {
+    if (inimigos[i].tipo === 'punitivo' || inimigos[i].erroQuestao || inimigos[i].tipo === 'bossErro') {
       return true
     }
   }
@@ -1017,12 +1279,23 @@ function existePunitivo() {
   return false
 }
 
+function liberarFilhosCarrier(morto) {
+  const filhos = criarFilhosCarrier(morto.x, morto.y, morto.wave || wave, morto.filhosAoMorrer)
+
+  for (let i = 0; i < filhos.length; i++) {
+    inimigos.push(filhos[i])
+  }
+
+  emitirParticulas(morto.x, morto.y, '#ff2020', 24)
+  adicionarOndaImpacto(morto.x, morto.y, '#ff9f1c', 120)
+}
+
 function vencerJogo() {
   score += 200
   pontos += 200
-  gameoverTitulo = 'CRITICAL POINT LIMPO'
-  gameoverTexto = 'Zion dominou a Matrix e classificou o ponto critico final.'
-  trocarEstado(STATE_GAMEOVER)
+  vitoriaTitulo = 'CRITICALPOINT ZERADO'
+  vitoriaTexto = 'Zion sobreviveu as 100 waves e classificou o ponto critico final.'
+  trocarEstado(STATE_VICTORY)
 }
 
 function desenharJogo(agora) {
@@ -1039,7 +1312,7 @@ function desenharJogo(agora) {
   desenharPlayer(ctx, player, agora, detalhe)
   desenharParticulas(ctx, particulas, detalhe)
   ctx.restore()
-  desenharHUD(ctx, canvas, player, score, wave, pontos)
+  desenharHUD(ctx, canvas, player, score, wave, pontos, WAVE_BOSS_FINAL)
 }
 
 function desenharFaculdade(agora) {
@@ -1990,18 +2263,45 @@ function desenharBotaoTutorial(rect, texto, habilitado, compacto) {
 
 function desenharGameover() {
   ctx.save()
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.72)'
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.82)'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.textAlign = 'center'
   ctx.shadowBlur = 18
-  ctx.shadowColor = '#00ff41'
-  ctx.fillStyle = '#00ff41'
-  ctx.font = '32px Courier New'
-  ctx.fillText(gameoverTitulo, canvas.width / 2, canvas.height / 2 - 70)
+  ctx.shadowColor = '#ff2020'
+  ctx.fillStyle = '#ff4545'
+  ctx.font = '34px Courier New'
+  ctx.fillText(gameoverTitulo, canvas.width / 2, canvas.height / 2 - 96)
   ctx.font = '18px Courier New'
-  ctx.fillText(gameoverTexto, canvas.width / 2, canvas.height / 2 - 28)
-  ctx.fillText('Score final: ' + score, canvas.width / 2, canvas.height / 2 + 8)
-  ctx.fillText('Pressione ENTER para reiniciar', canvas.width / 2, canvas.height / 2 + 58)
+  ctx.fillStyle = '#ffd4d4'
+  ctx.fillText(gameoverTexto, canvas.width / 2, canvas.height / 2 - 42)
+  ctx.fillStyle = '#ff8a8a'
+  ctx.fillText('Wave alcancada: ' + wave + '/' + WAVE_BOSS_FINAL, canvas.width / 2, canvas.height / 2 + 22)
+  ctx.fillText('Score final: ' + score, canvas.width / 2, canvas.height / 2 + 52)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillText('Pressione ENTER para tentar novamente', canvas.width / 2, canvas.height / 2 + 104)
+  ctx.restore()
+}
+
+function desenharVitoria() {
+  ctx.save()
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.76)'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.textAlign = 'center'
+  ctx.shadowBlur = 22
+  ctx.shadowColor = '#00ff88'
+  ctx.fillStyle = '#00ff88'
+  ctx.font = '34px Courier New'
+  ctx.fillText(vitoriaTitulo, canvas.width / 2, canvas.height / 2 - 104)
+  ctx.font = '18px Courier New'
+  ctx.fillStyle = '#d6ffe2'
+  ctx.fillText(vitoriaTexto, canvas.width / 2, canvas.height / 2 - 48)
+  ctx.fillStyle = '#fff2a6'
+  ctx.fillText('GAME ZERADO: ' + WAVE_BOSS_FINAL + '/' + WAVE_BOSS_FINAL + ' waves', canvas.width / 2, canvas.height / 2 + 20)
+  ctx.fillStyle = '#baffca'
+  ctx.fillText('Score final: ' + score, canvas.width / 2, canvas.height / 2 + 52)
+  ctx.fillText('Pontos restantes: ' + pontos, canvas.width / 2, canvas.height / 2 + 82)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillText('Pressione ENTER para jogar de novo', canvas.width / 2, canvas.height / 2 + 130)
   ctx.restore()
 }
 
@@ -2026,7 +2326,8 @@ function desenharEfeitosTela(agora) {
     estado === STATE_PLAYING ||
     estado === STATE_QUESTION ||
     estado === STATE_SHOP ||
-    estado === STATE_GAMEOVER
+    estado === STATE_GAMEOVER ||
+    estado === STATE_VICTORY
 
   if (dentroDaMatrix) {
     ctx.save()
@@ -2223,6 +2524,11 @@ function lidarClique() {
           return
         }
 
+        if (botao.tipo === 'arma') {
+          trocarArma(botao.arma)
+          return
+        }
+
         comprarUpgrade(botao.item)
         return
       }
@@ -2299,9 +2605,11 @@ function loop(agora) {
     questaoBotoes = desenharQuestao(ctx, canvas, questaoAtual, alternativaSelecionada)
   } else if (estado === STATE_SHOP) {
     desenharJogo(agora)
-    shopBotoes = desenharShop(ctx, canvas, pontos, SHOP_ITENS)
+    shopBotoes = desenharShop(ctx, canvas, pontos, SHOP_ITENS, obterArmasDisponiveisShop(), player)
   } else if (estado === STATE_GAMEOVER) {
     desenharGameover()
+  } else if (estado === STATE_VICTORY) {
+    desenharVitoria()
   }
 
   desenharEfeitosTela(agora)
@@ -2384,7 +2692,7 @@ window.addEventListener('keydown', function(event) {
     atirar(performance.now())
   }
 
-  if (event.key === 'Enter' && estado === STATE_GAMEOVER) {
+  if (event.key === 'Enter' && (estado === STATE_GAMEOVER || estado === STATE_VICTORY)) {
     resetarJogo()
   }
 })

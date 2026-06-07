@@ -1,16 +1,18 @@
-function desenharHUD(ctx, canvas, player, score, wave, pontos) {
+function desenharHUD(ctx, canvas, player, score, wave, pontos, waveFinal) {
   ctx.save()
   ctx.font = '16px Courier New'
   ctx.textBaseline = 'top'
   ctx.shadowBlur = 10
   ctx.shadowColor = '#00ff41'
 
-  desenharPainelHUD(ctx, 18, 18, 230, 102)
+  desenharPainelHUD(ctx, 18, 18, 280, 172)
   ctx.fillStyle = '#00ff41'
   ctx.fillText('SCORE: ' + score, 34, 34)
-  ctx.fillText('WAVE:  ' + wave, 34, 58)
-  ctx.fillText('HP:', 34, 82)
-  desenharBarrasHP(ctx, 74, 82, player.vida, player.vidaMaxima)
+  ctx.fillText('WAVE:  ' + wave + '/' + (waveFinal || wave), 34, 58)
+  desenharBarraStatus(ctx, 34, 84, 248, 24, 'HP:', player.vida, player.vidaMaxima, '#00ff41')
+  desenharBarraStatus(ctx, 34, 114, 248, 24, 'SH:', player.escudo || 0, player.escudoMaximo || 100, '#32b7ff')
+  ctx.fillStyle = '#00ff41'
+  ctx.fillText('ARMA:  ' + (player.armaNome || 'PADRAO'), 34, 148)
 
   const textoPontos = 'SHOP PTS: ' + pontos
   const largura = Math.max(190, ctx.measureText(textoPontos).width + 34)
@@ -29,33 +31,51 @@ function desenharPainelHUD(ctx, x, y, w, h) {
   ctx.strokeRect(x, y, w, h)
 }
 
-function desenharBarrasHP(ctx, x, y, vida, vidaMaxima) {
-  const total = Math.max(1, vidaMaxima)
-  const largura = 14
-  const altura = 14
-  const espacamento = 4
+function desenharBarraStatus(ctx, x, y, largura, altura, label, valor, valorMaximo, cor) {
+  const valorAtual = Math.max(0, Math.ceil(valor))
+  const valorTotal = Math.max(1, Math.ceil(valorMaximo))
+  const percentual = Math.max(0, Math.min(1, valorAtual / valorTotal))
+  const barraX = x + 42
+  const barraW = largura - 42
+  const corBarra = percentual <= 0.25 && label === 'HP:' ? '#ff4545' : cor
 
-  for (let i = 0; i < total; i++) {
-    ctx.fillStyle = i < vida ? '#00ff41' : 'rgba(0, 255, 65, 0.14)'
-    ctx.strokeStyle = '#00ff41'
-    ctx.fillRect(x + i * (largura + espacamento), y + 1, largura, altura)
-    ctx.strokeRect(x + i * (largura + espacamento), y + 1, largura, altura)
-  }
+  ctx.save()
+  ctx.shadowBlur = 8
+  ctx.shadowColor = corBarra
+  ctx.fillStyle = cor
+  ctx.fillText(label, x, y + 4)
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.78)'
+  ctx.strokeStyle = corBarra
+  ctx.lineWidth = 1
+  ctx.fillRect(barraX, y, barraW, altura)
+  ctx.strokeRect(barraX, y, barraW, altura)
+
+  ctx.fillStyle = corBarra
+  ctx.fillRect(barraX + 2, y + 2, Math.max(0, (barraW - 4) * percentual), altura - 4)
+
+  ctx.shadowBlur = 0
+  ctx.fillStyle = '#d6ffe2'
+  ctx.textAlign = 'center'
+  ctx.font = '13px Courier New'
+  ctx.fillText(valorAtual + '/' + valorTotal, barraX + barraW / 2, y + 5)
+  ctx.restore()
 }
 
-function desenharShop(ctx, canvas, pontos, itens) {
+function desenharShop(ctx, canvas, pontos, itens, armas, player) {
   const botoes = []
   const listaItens = itens || []
+  const listaArmas = armas || []
+  const mostrarArmas = listaArmas.length > 0
   const painelW = Math.min(860, canvas.width - 34)
-  const painelH = Math.min(530, canvas.height - 34)
+  const painelH = Math.min(mostrarArmas ? 670 : 530, canvas.height - 34)
   const painelX = canvas.width / 2 - painelW / 2
   const painelY = canvas.height / 2 - painelH / 2
   const colunas = canvas.width < 720 ? 1 : 2
   const itemW = colunas === 1 ? painelW - 44 : (painelW - 66) / 2
-  const espacoItens = painelH - 220
-  const itemH = colunas === 1 ? Math.max(64, Math.min(92, espacoItens / Math.max(1, listaItens.length) - 10)) : 92
-  const gapY = colunas === 1 ? 10 : 18
-  const inicioY = painelY + 118
+  const itemH = mostrarArmas ? (colunas === 1 ? 42 : 66) : (colunas === 1 ? 72 : 92)
+  const gapY = colunas === 1 ? 8 : 12
+  const inicioY = painelY + (mostrarArmas ? 102 : 118)
 
   ctx.save()
   ctx.fillStyle = 'rgba(0, 0, 0, 0.78)'
@@ -81,31 +101,73 @@ function desenharShop(ctx, canvas, pontos, itens) {
     const linha = colunas === 1 ? i : Math.floor(i / 2)
     const x = painelX + 22 + coluna * (itemW + 22)
     const y = inicioY + linha * (itemH + gapY)
-    const comprado = pontos >= item.custo
+    const maximo = upgradeNoMaximo(item, player)
+    const comprado = pontos >= item.custo && !maximo
+    const compactoItem = itemH < 70
 
     ctx.fillStyle = comprado ? 'rgba(0, 255, 65, 0.13)' : 'rgba(255, 32, 32, 0.12)'
-    ctx.strokeStyle = comprado ? '#00ff41' : '#ff6020'
+    ctx.strokeStyle = maximo ? '#fff2a6' : (comprado ? '#00ff41' : '#ff6020')
     ctx.lineWidth = 1
     ctx.fillRect(x, y, itemW, itemH)
     ctx.strokeRect(x, y, itemW, itemH)
 
     ctx.textAlign = 'left'
-    ctx.fillStyle = comprado ? '#d6ffe2' : '#ffb29a'
-    ctx.font = '20px Courier New'
-    ctx.fillText(item.nome, x + 18, y + 18)
-    ctx.font = '14px Courier New'
-    ctx.fillText(item.detalhe, x + 18, y + 48)
+    ctx.fillStyle = maximo ? '#fff2a6' : (comprado ? '#d6ffe2' : '#ffb29a')
+    ctx.font = compactoItem ? '16px Courier New' : '20px Courier New'
+    ctx.fillText(item.nome, x + 18, y + (compactoItem ? 9 : 18))
+    ctx.font = compactoItem ? '11px Courier New' : '14px Courier New'
+    ctx.fillText(item.detalhe, x + 18, y + (compactoItem ? 28 : 48))
 
     ctx.textAlign = 'right'
-    ctx.fillStyle = '#00ff41'
-    ctx.font = '18px Courier New'
-    ctx.fillText(item.custo + ' pts', x + itemW - 18, y + 34)
+    ctx.fillStyle = maximo ? '#fff2a6' : '#00ff41'
+    ctx.font = compactoItem ? '13px Courier New' : '18px Courier New'
+    ctx.fillText(maximo ? 'MAX' : item.custo + ' pts', x + itemW - 18, y + (compactoItem ? 16 : 34))
 
     botoes.push({
       tipo: 'compra',
       item: item,
       rect: { x: x, y: y, w: itemW, h: itemH }
     })
+  }
+
+  if (mostrarArmas) {
+    const linhasItens = colunas === 1 ? listaItens.length : Math.ceil(listaItens.length / 2)
+    const armaInicioY = inicioY + linhasItens * (itemH + gapY) + 24
+    const armaH = colunas === 1 ? 40 : 58
+
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#00ff41'
+    ctx.font = '17px Courier New'
+    ctx.fillText('ARSENAL DISPONIVEL', canvas.width / 2, armaInicioY - 8)
+
+    for (let i = 0; i < listaArmas.length; i++) {
+      const arma = listaArmas[i]
+      const coluna = colunas === 1 ? 0 : i % 2
+      const linha = colunas === 1 ? i : Math.floor(i / 2)
+      const x = painelX + 22 + coluna * (itemW + 22)
+      const y = armaInicioY + 12 + linha * (armaH + gapY)
+      const ativa = player && player.arma === arma.id
+
+      ctx.fillStyle = ativa ? 'rgba(255, 242, 166, 0.2)' : 'rgba(0, 255, 65, 0.1)'
+      ctx.strokeStyle = ativa ? '#fff2a6' : '#00ff41'
+      ctx.lineWidth = ativa ? 2 : 1
+      ctx.fillRect(x, y, itemW, armaH)
+      ctx.strokeRect(x, y, itemW, armaH)
+
+      ctx.textAlign = 'left'
+      ctx.fillStyle = ativa ? '#fff2a6' : '#d6ffe2'
+      ctx.font = colunas === 1 ? '15px Courier New' : '18px Courier New'
+      ctx.fillText(arma.nome, x + 16, y + (colunas === 1 ? 10 : 13))
+      ctx.font = colunas === 1 ? '11px Courier New' : '13px Courier New'
+      ctx.fillStyle = '#9effb8'
+      ctx.fillText(arma.detalhe, x + 16, y + (colunas === 1 ? 27 : 38))
+
+      botoes.push({
+        tipo: 'arma',
+        arma: arma,
+        rect: { x: x, y: y, w: itemW, h: armaH }
+      })
+    }
   }
 
   const botaoProxima = {
@@ -132,6 +194,26 @@ function desenharShop(ctx, canvas, pontos, itens) {
 
   ctx.restore()
   return botoes
+}
+
+function upgradeNoMaximo(item, player) {
+  if (!player || !item) {
+    return false
+  }
+
+  if (item.id === 'shield') {
+    return player.escudoMaximo >= 100 && player.escudo >= 100
+  }
+
+  if (item.id === 'firepower') {
+    return player.dano >= player.danoMaximo
+  }
+
+  if (item.id === 'speed') {
+    return player.velocidade >= player.velocidadeMaxima
+  }
+
+  return false
 }
 
 function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {

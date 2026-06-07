@@ -1,9 +1,14 @@
-function criarBala(player) {
+function criarBala(player, anguloOffset, ajustes) {
+  const config = ajustes || {}
   const distanciaCano = 35
-  const vx = Math.cos(player.angulo) * 11
-  const vy = Math.sin(player.angulo) * 11
-  const x = player.x + Math.cos(player.angulo) * distanciaCano
-  const y = player.y + Math.sin(player.angulo) * distanciaCano
+  const angulo = player.angulo + (anguloOffset || 0)
+  const velocidade = config.velocidade || 11
+  const vx = Math.cos(angulo) * velocidade
+  const vy = Math.sin(angulo) * velocidade
+  const x = player.x + Math.cos(angulo) * distanciaCano
+  const y = player.y + Math.sin(angulo) * distanciaCano
+
+  const dano = config.dano === undefined ? player.dano : config.dano
 
   return {
     x: x,
@@ -11,13 +16,68 @@ function criarBala(player) {
     vx: vx,
     vy: vy,
     velocidade: Math.sqrt(vx * vx + vy * vy),
-    dano: player.dano,
-    cor: '#00ff41',
-    raio: 4,
+    dano: Math.max(1, dano),
+    cor: config.cor || '#00ff41',
+    raio: config.raio || 4,
     distancia: 0,
+    alcance: config.alcance || 1600,
+    explosiva: !!config.explosiva,
+    raioExplosao: config.raioExplosao || 0,
+    danoExplosao: config.danoExplosao || 0,
     origem: 'player',
     criadoEm: performance.now()
   }
+}
+
+function criarBalasPlayer(player) {
+  if (player.arma === 'tripla') {
+    return [
+      criarBala(player, -0.16, { dano: player.dano * 0.85, cor: '#73ff9b' }),
+      criarBala(player, 0, { dano: player.dano * 0.85, cor: '#b7ffd0' }),
+      criarBala(player, 0.16, { dano: player.dano * 0.85, cor: '#73ff9b' })
+    ]
+  }
+
+  if (player.arma === 'explosiva') {
+    return [
+      criarBala(player, 0, {
+        velocidade: 8,
+        dano: player.dano * 1.25,
+        cor: '#ffb000',
+        raio: 7,
+        explosiva: true,
+        raioExplosao: 118,
+        danoExplosao: player.dano * 1.35,
+        alcance: 1350
+      })
+    ]
+  }
+
+  if (player.arma === 'precisao') {
+    return [
+      criarBala(player, 0, {
+        velocidade: 16,
+        dano: player.dano * 2.4,
+        cor: '#b7ffff',
+        raio: 5,
+        alcance: 2200
+      })
+    ]
+  }
+
+  if (player.arma === 'pulso') {
+    return [-0.26, -0.13, 0, 0.13, 0.26].map(function(offset) {
+      return criarBala(player, offset, {
+        velocidade: 10,
+        dano: player.dano * 0.62,
+        cor: '#d7ff4a',
+        raio: 3,
+        alcance: 760
+      })
+    })
+  }
+
+  return [criarBala(player)]
 }
 
 function criarBalaInimiga(x, y, angulo, velocidade, dano, cor) {
@@ -130,7 +190,7 @@ function removerBalas(balas, canvas) {
   for (let i = balas.length - 1; i >= 0; i--) {
     const bala = balas[i]
     const saiuDaTela = bala.x < -60 || bala.x > canvas.width + 60 || bala.y < -60 || bala.y > canvas.height + 60
-    const longeDemais = bala.distancia > 1600
+    const longeDemais = bala.distancia > (bala.alcance || 1600)
 
     if (saiuDaTela || longeDemais) {
       balas.splice(i, 1)

@@ -3,11 +3,17 @@ function criarPlayer(canvas) {
   return {
     x: canvas.width / 2,
     y: canvas.height / 2,
-    vida: 6,
-    vidaMaxima: 6,
+    vida: 100,
+    vidaMaxima: 100,
+    escudo: 0,
+    escudoMaximo: 0,
     dano: 1,
+    danoMaximo: 5,
     velocidade: 4,
+    velocidadeMaxima: 6.4,
     tamanho: 22,
+    arma: 'padrao',
+    armaNome: 'PADRAO',
     angulo: 0,
     cooldown: 260,
     ultimoTiro: 0,
@@ -61,21 +67,39 @@ function rotacionarPlayer(player, mouseX, mouseY) {
 
 function aplicarUpgradePlayer(player, tipo) {
   if (tipo === 'shield') {
-    player.vidaMaxima += 2
-    player.vida = player.vidaMaxima
+    if (player.escudoMaximo >= 100 && player.escudo >= 100) {
+      return false
+    }
+
+    player.escudoMaximo = 100
+    player.escudo = player.escudoMaximo
+    return true
   }
 
   if (tipo === 'firepower') {
-    player.dano += 1
+    if (player.dano >= player.danoMaximo) {
+      return false
+    }
+
+    player.dano = Math.min(player.danoMaximo, player.dano + 1)
+    return true
   }
 
   if (tipo === 'speed') {
-    player.velocidade += 0.6
+    if (player.velocidade >= player.velocidadeMaxima) {
+      return false
+    }
+
+    player.velocidade = Math.min(player.velocidadeMaxima, player.velocidade + 0.6)
+    return true
   }
 
   if (tipo === 'cooldown') {
     player.cooldown = Math.max(100, player.cooldown - 45)
+    return true
   }
+
+  return false
 }
 
 function receberDanoPlayer(player, dano, agora) {
@@ -83,7 +107,15 @@ function receberDanoPlayer(player, dano, agora) {
     return false
   }
 
-  player.vida -= dano
+  let danoRestante = dano
+
+  if (player.escudo > 0) {
+    const absorvido = Math.min(player.escudo, danoRestante)
+    player.escudo -= absorvido
+    danoRestante -= absorvido
+  }
+
+  player.vida = Math.max(0, player.vida - danoRestante)
   player.invulneravelAte = agora + 700
   return true
 }
