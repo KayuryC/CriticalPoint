@@ -35,43 +35,47 @@ const QUESTOES = {
     titulo: 'Wave 1 - Funcoes de varias variaveis',
     texto: 'Calcule f(2,3) para f(x,y) = x^2 + y^2',
     dica: 'Substitua x por 2 e y por 3.',
+    explicacao: 'Em f(2,3), o valor 2 entra no lugar de x e o valor 3 entra no lugar de y. Assim, f(2,3) = 2^2 + 3^2 = 4 + 9 = 13.',
     alternativas: [
-      { texto: '9', correta: false },
-      { texto: '12', correta: false },
+      { texto: '9', correta: false, erro: 'Essa resposta considera apenas 3^2. Faltou somar tambem a parcela x^2, que vale 2^2 = 4.' },
+      { texto: '12', correta: false, erro: 'Essa resposta indica erro na soma final. Depois de substituir, o calculo fica 4 + 9, que resulta em 13.' },
       { texto: '13', correta: true },
-      { texto: '25', correta: false }
+      { texto: '25', correta: false, erro: 'Essa resposta parece elevar a soma das coordenadas ao quadrado. O correto e calcular x^2 e y^2 separadamente.' }
     ]
   },
   2: {
     titulo: 'Wave 2 - Derivada parcial',
     texto: 'Calcule df/dx de f(x,y) = 3x^2 + 2xy + y^2',
     dica: 'Trate y como constante.',
+    explicacao: 'Na derivada parcial em x, y fica constante. Logo, d(3x^2)/dx = 6x, d(2xy)/dx = 2y e d(y^2)/dx = 0.',
     alternativas: [
       { texto: '6x + 2y', correta: true },
-      { texto: '6x + 2x', correta: false },
-      { texto: '3x + 2y', correta: false },
-      { texto: '6x + y^2', correta: false }
+      { texto: '6x + 2x', correta: false, erro: 'No termo 2xy, quem varia e x. O y deve permanecer como constante, entao a derivada e 2y, nao 2x.' },
+      { texto: '3x + 2y', correta: false, erro: 'Faltou aplicar corretamente a regra da potencia em 3x^2. A derivada de 3x^2 e 6x.' },
+      { texto: '6x + y^2', correta: false, erro: 'O termo y^2 nao depende de x. Ao derivar em x, ele vira zero.' }
     ]
   },
   3: {
     titulo: 'Wave 3 - Vetor gradiente',
     texto: 'Qual a direcao do gradiente de f(x,y) = x^2 + y^2 no ponto (1,2)?',
     dica: 'O gradiente e formado por (df/dx, df/dy).',
+    explicacao: 'Para f(x,y)=x^2+y^2, temos grad f = (2x, 2y). No ponto (1,2), isso vira (2,4).',
     alternativas: [
-      { texto: '(1, 2)', correta: false },
+      { texto: '(1, 2)', correta: false, erro: 'Essa alternativa repete o ponto, mas o gradiente usa as derivadas parciais avaliadas nesse ponto.' },
       { texto: '(2, 4)', correta: true },
-      { texto: '(4, 2)', correta: false },
-      { texto: '(2, -4)', correta: false }
+      { texto: '(4, 2)', correta: false, erro: 'As componentes foram trocadas. Primeiro vem df/dx e depois df/dy.' },
+      { texto: '(2, -4)', correta: false, erro: 'O sinal negativo nao aparece aqui, pois df/dy = 2y e y = 2.' }
     ]
   },
   4: {
     titulo: 'Wave 4 - Pontos criticos',
     texto: 'Classifique o ponto critico de f(x,y) = x^2 - y^2 no ponto (0,0)',
     dica: 'A curvatura muda de sinal entre x e y.',
+    explicacao: 'A funcao sobe na direcao de x, pois x^2 e positivo, e desce na direcao de y, pois -y^2 e negativo. Essa troca de curvatura caracteriza ponto de sela.',
     alternativas: [
-      { texto: 'Minimo local', correta: false },
-      { texto: 'Maximo local', correta: false },
-      { texto: 'Ponto regular', correta: false },
+      { texto: 'Minimo local', correta: false, erro: 'Nao e minimo porque na direcao y a funcao diminui ao se afastar de zero.' },
+      { texto: 'Maximo local', correta: false, erro: 'Nao e maximo porque na direcao x a funcao aumenta ao se afastar de zero.' },
+      { texto: 'Ponto regular', correta: false, erro: 'O ponto e critico, pois as derivadas parciais se anulam em (0,0). O passo final e classificar a curvatura.' },
       { texto: 'Ponto de sela', correta: true }
     ]
   },
@@ -79,44 +83,48 @@ const QUESTOES = {
     titulo: 'Wave 5 - Derivada parcial em y',
     texto: 'Calcule df/dy de f(x,y) = x^2y + 3y^2',
     dica: 'Trate x como constante e derive somente em relacao a y.',
+    explicacao: 'Ao derivar em y, x fica constante. A derivada de x^2y em relacao a y e x^2, e a derivada de 3y^2 e 6y.',
     alternativas: [
-      { texto: '2xy + 6y', correta: false },
+      { texto: '2xy + 6y', correta: false, erro: 'Essa resposta derivou x^2 como se x variasse. Em df/dy, x e constante, entao x^2y vira x^2.' },
       { texto: 'x^2 + 6y', correta: true },
-      { texto: 'x^2 + 3y', correta: false },
-      { texto: '2x + 6y', correta: false }
+      { texto: 'x^2 + 3y', correta: false, erro: 'Faltou o fator 2 na derivada de 3y^2. Pela regra da potencia, ela vira 6y.' },
+      { texto: '2x + 6y', correta: false, erro: 'O termo x^2y deriva para x^2 em relacao a y, nao para 2x.' }
     ]
   },
   6: {
     titulo: 'Wave 6 - Derivada direcional',
     texto: 'Para f(x,y) = x^2 + y^2 no ponto (3,4), calcule a derivada direcional na direcao u = (3/5, 4/5).',
     dica: 'Use grad f(3,4) = (6,8) e faca o produto escalar com u.',
+    explicacao: 'A derivada direcional e grad f(3,4) . u. Como grad f(3,4) = (6,8), temos 6*(3/5) + 8*(4/5) = 18/5 + 32/5 = 10.',
     alternativas: [
-      { texto: '5', correta: false },
-      { texto: '8', correta: false },
+      { texto: '5', correta: false, erro: 'Esse valor pode vir da norma da direcao antes de calcular o produto escalar. A derivada direcional usa grad f . u.' },
+      { texto: '8', correta: false, erro: 'Essa resposta usa apenas uma componente do gradiente. E preciso combinar as duas componentes com a direcao u.' },
       { texto: '10', correta: true },
-      { texto: '14', correta: false }
+      { texto: '14', correta: false, erro: 'Essa resposta parece somar 6 + 8 sem aplicar os pesos da direcao (3/5, 4/5).' }
     ]
   },
   7: {
     titulo: 'Wave 7 - Teste da Hessiana',
     texto: 'Use o teste da Hessiana para classificar o ponto (0,0) de f(x,y) = x^2 + y^2.',
     dica: 'D = fxx*fyy - (fxy)^2. Se D > 0 e fxx > 0, ha minimo local.',
+    explicacao: 'Aqui fxx = 2, fyy = 2 e fxy = 0. Entao D = 2*2 - 0^2 = 4. Como D > 0 e fxx > 0, o ponto e minimo local.',
     alternativas: [
-      { texto: 'Maximo local', correta: false },
-      { texto: 'Ponto de sela', correta: false },
+      { texto: 'Maximo local', correta: false, erro: 'Para maximo local, seria necessario D > 0 e fxx < 0. Aqui fxx e positivo.' },
+      { texto: 'Ponto de sela', correta: false, erro: 'Ponto de sela ocorre quando D < 0. Nesta funcao, D = 4, portanto D > 0.' },
       { texto: 'Minimo local', correta: true },
-      { texto: 'Teste inconclusivo', correta: false }
+      { texto: 'Teste inconclusivo', correta: false, erro: 'O teste so fica inconclusivo quando D = 0. Aqui D = 4.' }
     ]
   },
   8: {
     titulo: 'Wave 8 - Ponto critico completo',
     texto: 'Qual e o ponto critico de f(x,y) = x^2 + 4y^2 - 4x - 8y?',
     dica: 'Resolva f_x = 0 e f_y = 0.',
+    explicacao: 'As derivadas sao f_x = 2x - 4 e f_y = 8y - 8. Igualando a zero: x = 2 e y = 1. Portanto, o ponto critico e (2,1).',
     alternativas: [
-      { texto: '(0, 0)', correta: false },
+      { texto: '(0, 0)', correta: false, erro: 'Esse ponto so seria critico se as derivadas parciais fossem zero nele. Aqui f_x(0,0) = -4 e f_y(0,0) = -8.' },
       { texto: '(2, 1)', correta: true },
-      { texto: '(1, 2)', correta: false },
-      { texto: '(4, 8)', correta: false }
+      { texto: '(1, 2)', correta: false, erro: 'As coordenadas foram trocadas. Resolva separadamente f_x = 0 para x e f_y = 0 para y.' },
+      { texto: '(4, 8)', correta: false, erro: 'Essa alternativa usa os coeficientes lineares sem dividir pelos coeficientes das derivadas.' }
     ]
   }
 }
@@ -138,7 +146,12 @@ function gerarQuestaoBossFinal(numeroWave) {
     titulo: 'Wave ' + numeroWave + ' - Boss final: ponto critico',
     texto: 'Qual e o ponto critico de f(x,y) = x^2 + 4y^2 - 10x - 24y?',
     dica: 'Resolva f_x = 0 e f_y = 0. Aqui, f_x = 2x - 10 e f_y = 8y - 24.',
-    alternativas: criarAlternativas('(5, 3)', ['(3, 5)', '(10, 24)', '(0, 0)'], numeroWave)
+    explicacao: 'Iguale as derivadas a zero: 2x - 10 = 0 gera x = 5; 8y - 24 = 0 gera y = 3. O ponto critico e (5,3).',
+    alternativas: criarAlternativas('(5, 3)', [
+      { texto: '(3, 5)', erro: 'As coordenadas foram invertidas. O x vem da equacao f_x = 0 e o y vem da equacao f_y = 0.' },
+      { texto: '(10, 24)', erro: 'Essa alternativa usa os coeficientes lineares, mas e preciso resolver as equacoes das derivadas.' },
+      { texto: '(0, 0)', erro: 'O ponto (0,0) nao zera as derivadas: f_x ainda vale -10 e f_y ainda vale -24.' }
+    ], numeroWave)
   }
 }
 
@@ -156,7 +169,12 @@ function gerarQuestaoDinamica(numeroWave) {
       titulo: 'Wave ' + numeroWave + ' - Valor de f(x,y)',
       texto: 'Calcule f(' + x + ',' + y + ') para f(x,y) = ' + a + 'x^2 + ' + b + 'y.',
       dica: 'Substitua x e y antes de fazer as contas.',
-      alternativas: criarAlternativas(String(correta), [String(correta + a), String(correta - b), String(x * x + b * y)], numeroWave)
+      explicacao: 'Substitua primeiro: ' + a + '*' + x + '^2 + ' + b + '*' + y + '. Depois calcule a potencia, multiplique pelos coeficientes e some. O resultado e ' + correta + '.',
+      alternativas: criarAlternativas(String(correta), [
+        { texto: String(correta + a), erro: 'Essa resposta soma um coeficiente extra depois do calculo. Use apenas os termos da funcao original.' },
+        { texto: String(correta - b), erro: 'Essa resposta perde parte da parcela ' + b + 'y. Depois de substituir y, a parcela deve ser somada por completo.' },
+        { texto: String(x * x + b * y), erro: 'Faltou multiplicar x^2 pelo coeficiente ' + a + '.' }
+      ], numeroWave)
     }
   }
 
@@ -166,7 +184,12 @@ function gerarQuestaoDinamica(numeroWave) {
       titulo: 'Wave ' + numeroWave + ' - Derivada parcial em x',
       texto: 'Calcule df/dx de f(x,y) = ' + a + 'x^2 + ' + b + 'xy + ' + c + 'y^2.',
       dica: 'Ao derivar em x, trate y como constante.',
-      alternativas: criarAlternativas(correta, [a + 'x + ' + b + 'y', (2 * a) + 'x + ' + b + 'x', (2 * a) + 'x + ' + c + 'y^2'], numeroWave)
+      explicacao: 'Em df/dx, y e constante. A derivada de ' + a + 'x^2 e ' + (2 * a) + 'x; a derivada de ' + b + 'xy e ' + b + 'y; e ' + c + 'y^2 vira zero.',
+      alternativas: criarAlternativas(correta, [
+        { texto: a + 'x + ' + b + 'y', erro: 'Faltou aplicar o fator 2 da regra da potencia no termo ' + a + 'x^2.' },
+        { texto: (2 * a) + 'x + ' + b + 'x', erro: 'No termo xy, quem varia e x; o y fica como constante. Por isso a derivada e ' + b + 'y.' },
+        { texto: (2 * a) + 'x + ' + c + 'y^2', erro: 'O termo ' + c + 'y^2 nao depende de x, entao sua derivada parcial em x e zero.' }
+      ], numeroWave)
     }
   }
 
@@ -176,7 +199,12 @@ function gerarQuestaoDinamica(numeroWave) {
       titulo: 'Wave ' + numeroWave + ' - Derivada parcial em y',
       texto: 'Calcule df/dy de f(x,y) = ' + a + 'x^2 + ' + b + 'xy + ' + c + 'y^2.',
       dica: 'Ao derivar em y, trate x como constante.',
-      alternativas: criarAlternativas(correta, [b + 'y + ' + (2 * c) + 'x', a + 'x + ' + (2 * c) + 'y', b + 'x + ' + c + 'y'], numeroWave)
+      explicacao: 'Em df/dy, x e constante. O termo ' + a + 'x^2 vira zero, ' + b + 'xy vira ' + b + 'x e ' + c + 'y^2 vira ' + (2 * c) + 'y.',
+      alternativas: criarAlternativas(correta, [
+        { texto: b + 'y + ' + (2 * c) + 'x', erro: 'As variaveis foram trocadas. Em df/dy, xy deriva para x, e y^2 deriva para y.' },
+        { texto: a + 'x + ' + (2 * c) + 'y', erro: 'O termo ' + a + 'x^2 nao depende de y. Ele deve virar zero.' },
+        { texto: b + 'x + ' + c + 'y', erro: 'Faltou o fator 2 na derivada de ' + c + 'y^2.' }
+      ], numeroWave)
     }
   }
 
@@ -186,7 +214,12 @@ function gerarQuestaoDinamica(numeroWave) {
       titulo: 'Wave ' + numeroWave + ' - Vetor gradiente',
       texto: 'Qual e o gradiente de f(x,y) = x^2 + y^2 no ponto (' + x + ',' + y + ')?',
       dica: 'O gradiente e o vetor (df/dx, df/dy).',
-      alternativas: criarAlternativas(correta, ['(' + x + ', ' + y + ')', '(' + (2 * y) + ', ' + (2 * x) + ')', '(' + (x * x) + ', ' + (y * y) + ')'], numeroWave)
+      explicacao: 'Primeiro calcule grad f = (2x, 2y). Depois substitua o ponto: (2*' + x + ', 2*' + y + ') = ' + correta + '.',
+      alternativas: criarAlternativas(correta, [
+        { texto: '(' + x + ', ' + y + ')', erro: 'Essa alternativa repete o ponto. O gradiente precisa das derivadas parciais avaliadas no ponto.' },
+        { texto: '(' + (2 * y) + ', ' + (2 * x) + ')', erro: 'As componentes foram invertidas. A primeira componente e df/dx e a segunda e df/dy.' },
+        { texto: '(' + (x * x) + ', ' + (y * y) + ')', erro: 'Essa alternativa calcula potencias do ponto, mas o gradiente usa derivadas.' }
+      ], numeroWave)
     }
   }
 
@@ -196,7 +229,14 @@ function gerarQuestaoDinamica(numeroWave) {
       titulo: 'Wave ' + numeroWave + ' - Hessiana',
       texto: 'Classifique o ponto (0,0) de f(x,y) = ' + (sela ? 'x^2 - y^2.' : 'x^2 + y^2.'),
       dica: sela ? 'A curvatura muda de sinal entre x e y.' : 'A Hessiana tem curvatura positiva nas duas direcoes.',
-      alternativas: criarAlternativas(sela ? 'Ponto de sela' : 'Minimo local', ['Maximo local', sela ? 'Minimo local' : 'Ponto de sela', 'Teste inconclusivo'], numeroWave)
+      explicacao: sela
+        ? 'Em x^2 - y^2, a funcao aumenta em uma direcao e diminui na outra. Essa mistura de curvaturas indica ponto de sela.'
+        : 'Em x^2 + y^2, a curvatura e positiva nas duas direcoes. Pelo teste da Hessiana, isso indica minimo local.',
+      alternativas: criarAlternativas(sela ? 'Ponto de sela' : 'Minimo local', [
+        { texto: 'Maximo local', erro: sela ? 'Nao e maximo porque existe uma direcao em que a funcao aumenta.' : 'Nao e maximo porque a curvatura e positiva, nao negativa.' },
+        { texto: sela ? 'Minimo local' : 'Ponto de sela', erro: sela ? 'Nao e minimo porque existe uma direcao em que a funcao diminui.' : 'Nao e sela porque a curvatura nao muda de sinal.' },
+        { texto: 'Teste inconclusivo', erro: 'O teste nao e inconclusivo aqui: as curvaturas permitem classificar o ponto.' }
+      ], numeroWave)
     }
   }
 
@@ -206,34 +246,62 @@ function gerarQuestaoDinamica(numeroWave) {
     titulo: 'Wave ' + numeroWave + ' - Ponto critico',
     texto: 'Encontre o ponto critico de f(x,y) = x^2 + y^2 - ' + (2 * px) + 'x - ' + (2 * py) + 'y.',
     dica: 'Resolva f_x = 0 e f_y = 0.',
-    alternativas: criarAlternativas('(' + px + ', ' + py + ')', ['(' + py + ', ' + px + ')', '(' + (2 * px) + ', ' + (2 * py) + ')', '(0, 0)'], numeroWave)
+    explicacao: 'As derivadas sao f_x = 2x - ' + (2 * px) + ' e f_y = 2y - ' + (2 * py) + '. Igualando a zero, obtemos x = ' + px + ' e y = ' + py + '.',
+    alternativas: criarAlternativas('(' + px + ', ' + py + ')', [
+      { texto: '(' + py + ', ' + px + ')', erro: 'As coordenadas foram trocadas. Resolva f_x = 0 para x e f_y = 0 para y.' },
+      { texto: '(' + (2 * px) + ', ' + (2 * py) + ')', erro: 'Essa alternativa usa os coeficientes lineares, mas falta dividir por 2 ao resolver as derivadas.' },
+      { texto: '(0, 0)', erro: 'O ponto (0,0) nao zera as derivadas quando ha termos lineares deslocando a funcao.' }
+    ], numeroWave)
   }
 }
 
 function criarAlternativas(correta, distratores, numeroWave) {
+  const corretaTexto = String(correta)
   const erradas = []
 
   for (let i = 0; i < distratores.length; i++) {
-    const texto = String(distratores[i])
-    if (texto !== correta && erradas.indexOf(texto) === -1) {
-      erradas.push(texto)
+    const distrator = normalizarDistrator(distratores[i])
+    const repetida = erradas.some(function(item) {
+      return item.texto === distrator.texto
+    })
+
+    if (distrator.texto !== corretaTexto && !repetida) {
+      erradas.push(distrator)
     }
   }
 
   while (erradas.length < 3) {
-    erradas.push(correta + ' ')
+    erradas.push({
+      texto: corretaTexto + ' ',
+      erro: 'A alternativa marcada nao segue o procedimento esperado. Revise o calculo passo a passo.'
+    })
   }
 
   const posicaoCorreta = numeroWave % 4
-  const textos = erradas.slice(0, 3)
-  textos.splice(posicaoCorreta, 0, correta)
+  const itens = erradas.slice(0, 3)
+  itens.splice(posicaoCorreta, 0, { texto: corretaTexto, erro: '' })
 
-  return textos.slice(0, 4).map(function(texto, indice) {
+  return itens.slice(0, 4).map(function(item, indice) {
     return {
-      texto: texto,
-      correta: indice === posicaoCorreta
+      texto: item.texto,
+      correta: indice === posicaoCorreta,
+      erro: item.erro || ''
     }
   })
+}
+
+function normalizarDistrator(distrator) {
+  if (typeof distrator === 'object' && distrator !== null) {
+    return {
+      texto: String(distrator.texto),
+      erro: distrator.erro || ''
+    }
+  }
+
+  return {
+    texto: String(distrator),
+    erro: ''
+  }
 }
 
 const SHOP_ITENS = [
@@ -829,11 +897,13 @@ function abrirQuestao(numeroWave, boss) {
     titulo: dadosQuestao.titulo,
     texto: dadosQuestao.texto,
     dica: dadosQuestao.dica,
+    explicacao: dadosQuestao.explicacao || dadosQuestao.dica,
     alternativas: dadosQuestao.alternativas,
     respondida: false,
     acertou: null,
     respostaMarcada: null,
-    respostaCorreta: encontrarRespostaCorreta(dadosQuestao.alternativas)
+    respostaCorreta: encontrarRespostaCorreta(dadosQuestao.alternativas),
+    feedbackDetalhado: null
   }
   alternativaSelecionada = null
   questaoBotoes = []
@@ -864,6 +934,7 @@ function avaliarResposta() {
   questaoAtual.respondida = true
   questaoAtual.acertou = correta
   questaoAtual.respostaMarcada = alternativaSelecionada
+  questaoAtual.feedbackDetalhado = montarFeedbackQuestao(questaoAtual)
 
   if (correta) {
     score += 50
@@ -873,6 +944,24 @@ function avaliarResposta() {
   }
 
   agitarTela(10, 320, '#ff2020')
+}
+
+function montarFeedbackQuestao(questao) {
+  const marcada = questao.alternativas[questao.respostaMarcada]
+
+  if (questao.acertou) {
+    return {
+      motivo: 'Voce aplicou corretamente o procedimento desta questao.',
+      orientacao: questao.explicacao || questao.dica
+    }
+  }
+
+  return {
+    motivo: marcada && marcada.erro
+      ? marcada.erro
+      : 'A alternativa marcada nao segue o procedimento esperado para este conceito.',
+    orientacao: questao.explicacao || questao.dica || 'Revise o enunciado, identifique as variaveis e refaca o calculo em etapas.'
+  }
 }
 
 function finalizarQuestao() {

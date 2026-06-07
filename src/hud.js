@@ -220,8 +220,12 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   const botoes = []
   const respondida = !!questao.respondida
   const compacto = canvas.height < 620
+  const feedbackErrado = respondida && questao.acertou === false
+  const feedbackH = respondida
+    ? (feedbackErrado ? (compacto ? 150 : 198) : (compacto ? 74 : 100))
+    : 0
   const painelW = Math.min(900, canvas.width - 34)
-  const painelH = Math.min(respondida ? 640 : 560, canvas.height - 34)
+  const painelH = Math.min(respondida ? (feedbackErrado ? 720 : 640) : 560, canvas.height - 34)
   const painelX = canvas.width / 2 - painelW / 2
   const painelY = canvas.height / 2 - painelH / 2
   const alternativas = questao.alternativas || []
@@ -230,10 +234,11 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   const margemX = 34
   const gap = 16
   const alternativasY = painelY + (respondida ? Math.min(compacto ? 170 : 210, painelH * 0.34) : Math.min(230, painelH * 0.44))
-  const rodapeH = respondida ? (compacto ? 96 : 126) : 56
+  const rodapeH = respondida ? feedbackH + (compacto ? 50 : 64) : 56
   const alternativaW = colunas === 1 ? painelW - margemX * 2 : (painelW - margemX * 2 - gap) / 2
+  const alternativaMinH = respondida ? (compacto ? 34 : 46) : (compacto ? 40 : 54)
   const alternativaH = Math.max(
-    compacto ? 40 : 54,
+    alternativaMinH,
     Math.min(82, (painelY + painelH - rodapeH - alternativasY - gap * (linhas - 1)) / linhas)
   )
   const respostaCorreta = questao.respostaCorreta
@@ -319,8 +324,12 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
   ctx.textAlign = 'center'
 
   if (respondida) {
-    const feedbackY = painelY + painelH - (compacto ? 82 : 106)
     const correta = questao.acertou
+    const feedback = questao.feedbackDetalhado || {}
+    const feedbackX = painelX + 34
+    const feedbackW = painelW - 68
+    const feedbackY = painelY + painelH - feedbackH - (compacto ? 38 : 44)
+    const linhaFeedback = compacto ? 14 : 17
     const marcadaTexto = respostaMarcada >= 0 && alternativas[respostaMarcada]
       ? obterLetraAlternativaHUD(respostaMarcada) + ') ' + alternativas[respostaMarcada].texto
       : ''
@@ -331,22 +340,41 @@ function desenharQuestao(ctx, canvas, questao, alternativaSelecionada) {
     ctx.fillStyle = correta ? 'rgba(0, 255, 105, 0.1)' : 'rgba(255, 32, 32, 0.1)'
     ctx.strokeStyle = correta ? '#00ff88' : '#ff4545'
     ctx.lineWidth = 2
-    ctx.fillRect(painelX + 34, feedbackY, painelW - 68, compacto ? 66 : 88)
-    ctx.strokeRect(painelX + 34, feedbackY, painelW - 68, compacto ? 66 : 88)
+    ctx.fillRect(feedbackX, feedbackY, feedbackW, feedbackH)
+    ctx.strokeRect(feedbackX, feedbackY, feedbackW, feedbackH)
 
     ctx.fillStyle = correta ? '#00ff88' : '#ff4545'
     ctx.font = compacto ? '17px Courier New' : '20px Courier New'
     ctx.fillText(correta ? 'VOCE ACERTOU' : 'VOCE ERROU', canvas.width / 2, feedbackY + (compacto ? 22 : 26))
 
-    ctx.font = compacto ? '13px Courier New' : '15px Courier New'
-    ctx.fillStyle = '#baffca'
-    ctx.fillText('Correta: ' + corretaTexto, canvas.width / 2, feedbackY + (compacto ? 43 : 52))
+    ctx.textAlign = 'left'
+    ctx.font = compacto ? '11px Courier New' : '13px Courier New'
 
-    if (!correta && !compacto) {
+    let feedbackTextoY = feedbackY + (compacto ? 42 : 52)
+
+    if (correta) {
+      ctx.fillStyle = '#baffca'
+      feedbackTextoY = desenharTextoLimitadoHUD(ctx, 'Correta: ' + corretaTexto, feedbackX + 14, feedbackTextoY, feedbackW - 28, linhaFeedback, compacto ? 1 : 2)
+
+      if (!compacto && feedback.orientacao) {
+        ctx.fillStyle = '#d6ffe2'
+        desenharTextoLimitadoHUD(ctx, 'Conceito: ' + feedback.orientacao, feedbackX + 14, feedbackTextoY + 2, feedbackW - 28, linhaFeedback, 2)
+      }
+    } else {
       ctx.fillStyle = '#ffb2b2'
-      ctx.fillText('Marcada: ' + marcadaTexto, canvas.width / 2, feedbackY + 72)
+      feedbackTextoY = desenharTextoLimitadoHUD(ctx, 'Marcada: ' + marcadaTexto, feedbackX + 14, feedbackTextoY, feedbackW - 28, linhaFeedback, compacto ? 1 : 2)
+
+      ctx.fillStyle = '#baffca'
+      feedbackTextoY = desenharTextoLimitadoHUD(ctx, 'Correta: ' + corretaTexto, feedbackX + 14, feedbackTextoY + 1, feedbackW - 28, linhaFeedback, compacto ? 1 : 2)
+
+      ctx.fillStyle = '#ffd29a'
+      feedbackTextoY = desenharTextoLimitadoHUD(ctx, 'Motivo: ' + (feedback.motivo || 'A alternativa marcada nao segue o procedimento esperado.'), feedbackX + 14, feedbackTextoY + 3, feedbackW - 28, linhaFeedback, compacto ? 2 : 3)
+
+      ctx.fillStyle = '#d6ffe2'
+      desenharTextoLimitadoHUD(ctx, 'Orientacao: ' + (feedback.orientacao || questao.dica), feedbackX + 14, feedbackTextoY + 3, feedbackW - 28, linhaFeedback, compacto ? 2 : 3)
     }
 
+    ctx.textAlign = 'center'
     ctx.fillStyle = '#d6ffe2'
     ctx.font = '13px Courier New'
     ctx.fillText('Clique ou pressione Enter para continuar', canvas.width / 2, painelY + painelH - 18)
@@ -365,7 +393,7 @@ function obterLetraAlternativaHUD(indice) {
 }
 
 function quebrarTextoHUD(ctx, texto, x, y, largura, alturaLinha) {
-  const palavras = texto.split(' ')
+  const palavras = String(texto).split(' ')
   let linha = ''
   let linhaY = y
 
@@ -382,4 +410,40 @@ function quebrarTextoHUD(ctx, texto, x, y, largura, alturaLinha) {
   }
 
   ctx.fillText(linha, x, linhaY)
+}
+
+function desenharTextoLimitadoHUD(ctx, texto, x, y, largura, alturaLinha, maxLinhas) {
+  const palavras = String(texto).split(' ')
+  const linhas = []
+  let linha = ''
+
+  for (let i = 0; i < palavras.length; i++) {
+    const teste = linha + palavras[i] + ' '
+
+    if (ctx.measureText(teste).width > largura && linha !== '') {
+      linhas.push(linha.trim())
+      linha = palavras[i] + ' '
+    } else {
+      linha = teste
+    }
+  }
+
+  if (linha.trim() !== '') {
+    linhas.push(linha.trim())
+  }
+
+  const limite = Math.max(1, maxLinhas || linhas.length)
+  const total = Math.min(linhas.length, limite)
+
+  for (let i = 0; i < total; i++) {
+    let textoLinha = linhas[i]
+
+    if (i === total - 1 && linhas.length > limite) {
+      textoLinha = textoLinha.replace(/\s+$/, '') + '...'
+    }
+
+    ctx.fillText(textoLinha, x, y + i * alturaLinha)
+  }
+
+  return y + total * alturaLinha
 }
